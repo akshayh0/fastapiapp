@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from .job import JobResponse
 
@@ -18,7 +18,7 @@ class CompanyUpdate(CompanyBase):
 
 class CompanyResponse(CompanyBase):
     id: int
-    job: list = [JobResponse]
+    jobs: list[JobResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
