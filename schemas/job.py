@@ -16,3 +16,10 @@ class JobUpdate(JobBase):
     salary: int = None
     description: Optional[str] = None
     company_id: Optional[int] = None
+
+class JobResponse(JobBase):
+    id: int
+    company_id: int
+
+    class Config:
+        from_attributes = True
