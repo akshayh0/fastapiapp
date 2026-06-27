@@ -1,6 +1,6 @@
-from sqlachemy import Column, Integer, String,Enum,ForeignKey,relationship
-from models.company import Company
+from sqlalchemy import Column, Integer, String, Enum, ForeignKey
 from database import Base,engine,SessionLocal
+from sqlalchemy.orm import relationship
 class Job(Base):
     __tablename__ = "jobs"
     id = Column(Integer, primary_key=True, index=True)

@@ -1,29 +1,39 @@
-from fastapi import APIRouter
-from schemas.company import CompanyCreate,CompanyUpdate
-router = APIRouter(prefix="/company",tags=["company"])
+from fastapi import APIRouter, HTTPException, Depends, status
+from schemas.company import CompanyCreate, CompanyUpdate, CompanyResponse
+from models.company import Company
+from sqlalchemy.orm import Session
+from database import get_db, SessionLocal
+
+router = APIRouter(prefix="/company", tags=["company"])
 companies = []
+@router.post("/",status_code=status.HTTP_201_CREATED,response_model=CompanyResponse)
+def create_company(company: CompanyCreate,db:Session=Depends(get_db)):
+    db_company = Company(**company.dict())
+    db.add(db_company)
+    db.commit()
+    db.refresh(db_company)
+    return db_company
 
-@router.post("/")
-def create_company(company: CompanyCreate):
-    companies.append(company)
-    return companies
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[CompanyResponse])
+def get_all_company(db: Session = Depends(get_db)):
+    return db.query(Company).all()
 
-@router.get("/")
-def get_all_company():
-    return companies
+@router.get("/{company_id}", status_code=status.HTTP_200_OK, response_model=CompanyResponse)
+def get_company(company_id: int, db: Session = Depends(get_db)):
+    return db.query(Company).filter(Company.id == company_id).first()
 
-@router.get("/{company_id}")
-def get_company(company_id:int):
-    return companies[company_id]
+@router.put("/{company_id}",status_code=status.HTTP_202_ACCEPTED)
+def update_company(company_id: int, company: CompanyUpdate,db:Session=Depends(get_db)):
+    db_company = db.query(Company).filter(Company.id == company_id).first()
+    for key, value in company.dict().items():
+        setattr(db_company, key, value)
+    db.commit()
+    db.refresh(db_company)
+    return db_company
 
-@router.put("/{company_id}")
-def update_company(company_id: int, company: CompanyUpdate):
-    companies[company_id] = company
-    return companies[company_id]
-
-@router.delete("/{company_id}")
-def delete_company(company_id: int):
-    companies.pop(company_id)
+@router.delete("/{company_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_company(company_id: int,db:Session=Depends(get_db)):
+    pass
     return companies
 
 # @router.get("/")
