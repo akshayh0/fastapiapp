@@ -4,22 +4,23 @@ from typing import Optional
 from .job import JobResponse
 
 class CompanyBase(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    
+class CompanyCreate(CompanyBase):
     name: str
     email: str
     phone: str
     location: str
     
-class CompanyCreate(CompanyBase):
-    pass
-    
 class CompanyUpdate(CompanyBase):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    location: Optional[str] = None
+    pass
 class CompanyResponse(CompanyBase):
     id: int
     jobs: list[JobResponse] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
