@@ -5,11 +5,21 @@ import CompanyCard from "./components/CompanyCard";
 import JobCard from "./components/JobCard";
 import { useEffect, useState } from "react";
 import {getCompanies} from "./Services/companyService";
-import type { company } from "./types/company";
+import type { Company } from "./types/company";
 function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [companies, setCompanies] = useState<company[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+
+  const handleAddCompany = (company: Company) => {
+    setCompanies((prev) => [...prev, company]);
+  };
+
+  const handleEditCompany = (company: Company) => { setCompanies((prev) => prev.map((item) => item.id === company.id ? company : item)); };
+
+  const handleDeleteCompany = (id: number) => {
+    setCompanies((prev) => prev.filter((item) => item.id !== id));
+  };
 
   async function fetchCompanies() {
     setLoading(true);
@@ -25,8 +35,7 @@ function App() {
   useEffect(() => {
     fetchCompanies();
   }, []);
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading) { return <div>Loading...</div>;
   }
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -37,7 +46,11 @@ function App() {
     <Welcome />
     <br />
     <CompanyCard
-    companies={companies}/>
+      companies={companies}
+      onadd={handleAddCompany}
+      onedit={handleEditCompany}
+      ondelete={handleDeleteCompany}
+    />
     <JobCard/>
     <Footer/>
     </>
