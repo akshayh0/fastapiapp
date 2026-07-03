@@ -1,48 +1,27 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 from typing import Optional
 from .job import JobResponse
 
 
 class CompanyBase(BaseModel):
-    name: Optional[str] = Field(None, examples=["TalentSpark"])
-    email: Optional[str] = Field(None, examples=["hr@talentspark.com"])
-    phone: Optional[str] = Field(None, examples=["9876543210"])
-    location: Optional[str] = Field(None, examples=["Bengaluru"])
-
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
 
 class CompanyCreate(CompanyBase):
-    name: str
-    email: str
-    phone: str
-    location: str
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "name": "TalentSpark",
-                "email": "hr@talentspark.com",
-                "phone": "9876543210",
-                "location": "Bengaluru",
-            }
-        }
-    )
-
+    name:str
+    email:str
+    phone:str
+    location:str
 
 class CompanyUpdate(CompanyBase):
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "name": "TalentSpark Technologies",
-                "email": "careers@talentspark.com",
-                "phone": "9876543211",
-                "location": "Hyderabad",
-            }
-        }
-    )
-
+    pass
 
 class CompanyResponse(CompanyBase):
-    id: int
+    id:int
     jobs: list[JobResponse]
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
+

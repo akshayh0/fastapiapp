@@ -1,5 +1,4 @@
-import type {Job } from './job';
-
+import type {Job} from "./job";
 interface Company{
     id:number;
     name:string;

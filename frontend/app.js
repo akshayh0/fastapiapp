@@ -1,1 +1,1 @@
-import { name } from "./company.js";
+import {name} from "./company.js";
