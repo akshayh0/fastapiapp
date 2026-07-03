@@ -12,7 +12,6 @@ type Props = {
 function CompanyCard({
     companies,onadd,onedit,ondelete}:Props){
     const [editCompanyId, setEditCompanyId] = useState<number | null>(null);
-    const [editcompany, setEditcompany] = useState<Company | null>(null);
     const [addform,setAddform] = useState<Company>({
         id:0,
         name:"",
@@ -40,21 +39,7 @@ function CompanyCard({
             jobs:[]
         })
     }
-    const handleEdit = (company:Company) => {
-        onedit(company);
-        setEditform({
-            id:company.id,
-            name:company.name,
-            email:company.email,
-            phone:company.phone,
-            location:company.location,
-            jobs:[]
-        })
-    }
-    const handleDelete = (id:number) => {
-        ondelete(id);
-    }
-    const handleSave = (id:number) => {
+    const handleSave = () => {
         onedit(editform);
         setEditform({
             id:0,
@@ -87,7 +72,7 @@ function CompanyCard({
                     <input type="text" value={editform.email} onChange={(e)=>setEditform({...editform,email:e.target.value})} placeholder={company.email} />
                     <input type="text" value={editform.phone} onChange={(e)=>setEditform({...editform,phone:e.target.value})} placeholder={company.phone} />
                     <input type="text" value={editform.location} onChange={(e)=>setEditform({...editform,location:e.target.value})} placeholder={company.location} />
-                    <button onClick={() => handleSave(company.id)}>Save</button>
+                    <button onClick={() => handleSave()}>Save</button>
                     <button onClick={handlecancel}>Cancel</button>
                     </>
                     ):
