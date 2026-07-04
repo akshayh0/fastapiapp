@@ -4,7 +4,96 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>talentspark</title>
+    <title>TalentSpark - CareerAI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Hanken+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "outline-variant": "#4a4455",
+              "primary": "#d2bbff",
+              "on-surface": "#dae2fd",
+              "surface-container-highest": "#2d3449",
+              "surface-tint": "#d2bbff",
+              "outline": "#958da1",
+              "tertiary-container": "#ae397b",
+              "surface-dim": "#0b1326",
+              "on-secondary-fixed": "#001e2f",
+              "on-error-container": "#ffdad6",
+              "on-error": "#690005",
+              "inverse-primary": "#732ee4",
+              "surface-container-low": "#131b2e",
+              "inverse-surface": "#dae2fd",
+              "on-tertiary-fixed": "#3d0026",
+              "inverse-on-surface": "#283044",
+              "tertiary-fixed-dim": "#ffafd3",
+              "secondary-fixed-dim": "#89ceff",
+              "on-tertiary": "#620040",
+              "on-primary-fixed-variant": "#5a00c6",
+              "on-primary-container": "#ede0ff",
+              "surface-container-lowest": "#060e20",
+              "secondary-container": "#00a2e6",
+              "on-surface-variant": "#ccc3d8",
+              "secondary": "#89ceff",
+              "on-secondary": "#00344d",
+              "on-primary-fixed": "#25005a",
+              "error-container": "#93000a",
+              "tertiary-fixed": "#ffd8e7",
+              "primary-fixed-dim": "#d2bbff",
+              "on-background": "#dae2fd",
+              "error": "#ffb4ab",
+              "on-secondary-container": "#00344e",
+              "secondary-fixed": "#c9e6ff",
+              "primary-fixed": "#eaddff",
+              "primary-container": "#7c3aed",
+              "surface-bright": "#31394d",
+              "on-tertiary-container": "#ffdce9",
+              "surface-container": "#171f33",
+              "on-tertiary-fixed-variant": "#85145a",
+              "background": "#0b1326",
+              "on-secondary-fixed-variant": "#004c6e",
+              "on-primary": "#3f008e",
+              "tertiary": "#ffafd3",
+              "surface-variant": "#2d3449",
+              "surface": "#0b1326",
+              "surface-container-high": "#222a3d"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            spacing: {
+              base: "8px",
+              gutter: "24px",
+              "margin-mobile": "16px",
+              "margin-desktop": "40px",
+              "container-max": "1200px"
+            },
+            fontFamily: {
+              "headline-lg-mobile": ["Hanken Grotesk"],
+              "label-sm": ["JetBrains Mono"],
+              "display-lg": ["Hanken Grotesk"],
+              "headline-lg": ["Hanken Grotesk"],
+              "body-md": ["Inter"]
+            },
+            fontSize: {
+              "headline-lg-mobile": ["28px", { lineHeight: "1.2", fontWeight: "600" }],
+              "label-sm": ["12px", { lineHeight: "1.4", letterSpacing: "0.05em", fontWeight: "500" }],
+              "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "headline-lg": ["32px", { lineHeight: "1.2", fontWeight: "600" }],
+              "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }]
+            }
+          }
+        }
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>
