@@ -6,7 +6,7 @@ from models import job as job_model
 from models import company as company_model
 from models import users as user_model
 
-from routers import auth, company, job
+from routers import auth, company, job,rag
 from routers.chat import router as chat_router
 
 app = FastAPI()
@@ -27,8 +27,8 @@ Base.metadata.create_all(bind=engine)
 app.include_router(auth.router)
 app.include_router(company.router)
 app.include_router(job.router)
-app.include_router(chat_router)
-
+app.include_router(chat.router)
+app.include_router(rag.router)
 # Root APIs
 @app.get("/")
 def read_root():
