@@ -109,3 +109,166 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ----------------------------------------------------
+   Light & Dark Theme Variables
+   ---------------------------------------------------- */
+:root {
+  --app-bg: #f8fafc;
+  --app-text: #1e293b;
+  --app-text-muted: #64748b;
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  --sidenav-bg: rgba(241, 245, 249, 0.6);
+  --card-bg: rgba(255, 255, 255, 0.75);
+  --card-border: rgba(15, 23, 42, 0.08);
+  --card-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
+  --input-bg: rgba(15, 23, 42, 0.03);
+  --input-border: rgba(15, 23, 42, 0.08);
+  --input-text: #0f172a;
+  --accent-color: #6d28d9;
+  --accent-light: rgba(109, 40, 217, 0.08);
+  --sub-card-bg: rgba(15, 23, 42, 0.02);
+  --sub-card-border: rgba(15, 23, 42, 0.04);
+  --text-white-override: #0f172a;
+  --text-primary-override: #6d28d9;
+  --text-secondary-override: #0284c7;
+}
+
+.dark {
+  --app-bg: #0b1326;
+  --app-text: #dae2fd;
+  --app-text-muted: #ccc3d8;
+  --nav-bg: rgba(11, 19, 38, 0.8);
+  --sidenav-bg: rgba(19, 27, 46, 0.5);
+  --card-bg: rgba(30, 41, 59, 0.4);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: #dae2fd;
+  --accent-color: #d2bbff;
+  --accent-light: rgba(210, 187, 255, 0.1);
+  --sub-card-bg: rgba(255, 255, 255, 0.05);
+  --sub-card-border: rgba(255, 255, 255, 0.05);
+  --text-white-override: #ffffff;
+  --text-primary-override: #d2bbff;
+  --text-secondary-override: #89ceff;
+}
+
+/* ----------------------------------------------------
+   Global Theme Overrides
+   ---------------------------------------------------- */
+body {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* App roots and main containers */
+#root, .bg-\[\#0b1326\], div.fixed.inset-0.bg-\[\#0b1326\], main {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Title and headers */
+.text-white {
+  color: var(--text-white-override) !important;
+  transition: color 0.3s ease;
+}
+
+/* Brand / Accent colors */
+.text-primary {
+  color: var(--text-primary-override) !important;
+  transition: color 0.3s ease;
+}
+
+.text-secondary {
+  color: var(--text-secondary-override) !important;
+  transition: color 0.3s ease;
+}
+
+/* Card components */
+.glass-panel {
+  background: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Nested elements / List items */
+.bg-white\/5 {
+  background-color: var(--sub-card-bg) !important;
+  border-color: var(--sub-card-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Inputs, Textareas, Select lists, glowing-input */
+.bg-white\/5.border-white\/10,
+.bg-\[\#131b2e\].border-white\/10,
+input.bg-white\/5,
+textarea.bg-white\/5,
+select.bg-white\/5,
+input.bg-\[\#131b2e\],
+textarea.bg-\[\#131b2e\],
+select.bg-\[\#131b2e\],
+.glowing-input {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--input-text) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Sidebar and Navbar layout */
+aside.bg-\[\#131b2e\]\/50 {
+  background-color: var(--sidenav-bg) !important;
+  border-color: var(--card-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+nav.bg-\[\#0b1326\]\/80 {
+  background-color: var(--nav-bg) !important;
+  border-color: var(--card-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Text and border colors */
+.text-on-surface-variant {
+  color: var(--app-text-muted) !important;
+  transition: color 0.3s ease;
+}
+
+.text-on-surface {
+  color: var(--app-text) !important;
+  transition: color 0.3s ease;
+}
+
+.border-white\/10, .border-white\/5 {
+  border-color: var(--card-border) !important;
+  transition: border-color 0.3s ease;
+}
+
+.border-outline-variant {
+  border-color: var(--input-border) !important;
+  transition: border-color 0.3s ease;
+}
+
+/* Sidebar selection status colors */
+.bg-\[\#7c3aed\]\/20 {
+  background-color: var(--accent-light) !important;
+  color: var(--text-primary-override) !important;
+  border-right-color: var(--accent-color) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.hover\:bg-white\/5:hover {
+  background-color: var(--sub-card-bg) !important;
+}
+
+/* Hero Section dynamic adjustment */
+.bg-white\/\[0\.02\] {
+  background-color: var(--sub-card-bg) !important;
+  border-color: var(--card-border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+

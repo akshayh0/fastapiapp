@@ -50,6 +50,7 @@ export function LoginBackground() {
       uniform float u_time;
       uniform vec2 u_resolution;
       uniform vec2 u_mouse;
+      uniform float u_dark_mode;
       void main() {
         vec2 uv = v_texCoord;
         vec2 mouse = u_mouse / u_resolution;
@@ -61,9 +62,9 @@ export function LoginBackground() {
           p.x += 0.4 / fi * sin(fi * p.y + t + 0.5 * fi);
           p.y += 0.3 / fi * cos(fi * p.x + t + 0.8 * fi);
         }
-        vec3 color1 = vec3(0.043, 0.075, 0.149); 
-        vec3 color2 = vec3(0.25, 0.1, 0.6);      
-        vec3 color3 = vec3(0.486, 0.227, 0.929); 
+        vec3 color1 = mix(vec3(0.97, 0.98, 1.0), vec3(0.043, 0.075, 0.149), u_dark_mode); 
+        vec3 color2 = mix(vec3(0.85, 0.75, 0.95), vec3(0.25, 0.1, 0.6), u_dark_mode);      
+        vec3 color3 = mix(vec3(0.70, 0.90, 1.0), vec3(0.486, 0.227, 0.929), u_dark_mode); 
         float intensity = length(p) * 0.5;
         vec3 finalColor = mix(color1, color2, clamp(intensity, 0.0, 1.0));
         finalColor = mix(finalColor, color3, pow(clamp(1.0 - intensity, 0.0, 1.0), 3.0) * 0.4);
@@ -117,6 +118,7 @@ export function LoginBackground() {
     const uTime = gl.getUniformLocation(prog, "u_time");
     const uRes = gl.getUniformLocation(prog, "u_resolution");
     const uMouse = gl.getUniformLocation(prog, "u_mouse");
+    const uDarkMode = gl.getUniformLocation(prog, "u_dark_mode");
 
     const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
@@ -138,6 +140,10 @@ export function LoginBackground() {
       if (uTime) gl.uniform1f(uTime, t * 0.001);
       if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
       if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+      
+      const isDark = document.documentElement.classList.contains("dark");
+      if (uDarkMode) gl.uniform1f(uDarkMode, isDark ? 1.0 : 0.0);
+
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       shaderAnimationId = requestAnimationFrame(renderShader);
     };

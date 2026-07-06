@@ -1,6 +1,6 @@
 import type { Job } from "../types/job";
 import type { Company } from "../types/company";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Props = {
   jobs: Job[];
@@ -27,10 +27,35 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
     company_id: 0,
   });
 
+  // Sync company_id default value when companies list changes/loads
+  useEffect(() => {
+    if (companies.length > 0 && addform.company_id === 0) {
+      setAddform((prev) => ({
+        ...prev,
+        company_id: companies[0].id,
+      }));
+    }
+  }, [companies, addform.company_id]);
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!addform.title.trim()) return;
-    onAdd(addform);
+
+    let parsedSalary: number | null = null;
+    if (typeof addform.salary === "string" && addform.salary.trim() !== "") {
+      const digits = addform.salary.replace(/[^0-9]/g, "");
+      if (digits !== "") {
+        parsedSalary = parseInt(digits, 10);
+      }
+    } else if (typeof addform.salary === "number") {
+      parsedSalary = addform.salary;
+    }
+
+    onAdd({
+      ...addform,
+      salary: parsedSalary,
+    });
+
     setAddform({
       id: 0,
       title: "",
@@ -42,7 +67,21 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
 
   const handleSave = () => {
     if (!editform.title.trim()) return;
-    onEdit(editform);
+
+    let parsedSalary: number | null = null;
+    if (typeof editform.salary === "string" && editform.salary.trim() !== "") {
+      const digits = editform.salary.replace(/[^0-9]/g, "");
+      if (digits !== "") {
+        parsedSalary = parseInt(digits, 10);
+      }
+    } else if (typeof editform.salary === "number") {
+      parsedSalary = editform.salary;
+    }
+
+    onEdit({
+      ...editform,
+      salary: parsedSalary,
+    });
     setEditJobId(null);
   };
 
@@ -106,7 +145,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                       type="text"
                       className="w-full bg-[#131b2e] border border-white/10 rounded-lg p-2 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
                       placeholder="Salary (e.g. $140,000)"
-                      value={editform.salary}
+                      value={editform.salary ?? ""}
                       onChange={(e) => setEditform({ ...editform, salary: e.target.value })}
                     />
                     <textarea
@@ -149,12 +188,14 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                         <h4 className="text-on-surface font-bold text-base m-0">
                           {job.title}
                         </h4>
-                        {job.salary && (
+                        {job.salary !== null && job.salary !== undefined && job.salary !== "" && (
                           <span
                             className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold"
                             style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           >
-                            {job.salary}
+                            {typeof job.salary === "number"
+                              ? `$${job.salary.toLocaleString()}`
+                              : job.salary}
                           </span>
                         )}
                       </div>
@@ -213,7 +254,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
             type="text"
             className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
             placeholder="Salary (e.g. $150,000 / yr)"
-            value={addform.salary}
+            value={addform.salary ?? ""}
             onChange={(e) => setAddform({ ...addform, salary: e.target.value })}
           />
           <select

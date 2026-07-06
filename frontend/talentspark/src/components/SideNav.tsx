@@ -73,23 +73,6 @@ export function SideNav({ activeTab, onTabChange, onLogout }: Props) {
       {/* Footer SideNav Actions */}
       <div className="mt-auto flex flex-col gap-1 border-t border-white/5 pt-4">
         <button
-          className="w-full mb-4 py-3 px-4 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-semibold text-sm shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:scale-[1.02] active:scale-95 transition-all border-none cursor-pointer"
-          onClick={() => alert("Upgrade to Pro initiated.")}
-        >
-          Upgrade Pro
-        </button>
-
-        <button
-          onClick={() => alert("Help documentation is available on the support portal.")}
-          className="flex items-center gap-3 px-4 py-2 rounded-lg text-left border-none bg-transparent text-on-surface-variant hover:bg-white/5 hover:translate-x-1 transition-all duration-300 w-full cursor-pointer"
-        >
-          <span className="material-symbols-outlined">help</span>
-          <span className="font-label-sm text-label-sm text-sm" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            Help
-          </span>
-        </button>
-
-        <button
           onClick={onLogout}
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-left border-none bg-transparent text-on-surface-variant hover:bg-white/5 hover:translate-x-1 transition-all duration-300 w-full cursor-pointer"
         >

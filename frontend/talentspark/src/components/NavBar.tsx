@@ -1,8 +1,10 @@
 type Props = {
   onLogout?: () => void;
+  theme: "dark" | "light";
+  onToggleTheme: () => void;
 };
 
-function NavBar({ onLogout }: Props) {
+function NavBar({ onLogout, theme, onToggleTheme }: Props) {
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -18,25 +20,22 @@ function NavBar({ onLogout }: Props) {
         <span className="text-headline-lg font-headline-lg text-primary tracking-tight" style={{ fontFamily: "'Hanken Grotesk', sans-serif" }}>
           CareerAI
         </span>
-        <div className="hidden md:flex items-center bg-[#2d3449]/40 rounded-full px-4 py-1.5 border border-white/5">
-          <span className="material-symbols-outlined text-on-surface-variant text-[20px] mr-2">
-            search
-          </span>
-          <input
-            className="bg-transparent border-none focus:ring-0 text-label-sm font-label-sm w-48 placeholder:text-on-surface-variant text-sm text-on-surface outline-none"
-            placeholder="Search insights..."
-            type="text"
-            onClick={(e) => e.preventDefault()}
-          />
-        </div>
+
       </div>
 
       <div className="flex items-center gap-6">
         <button className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 bg-transparent border-none cursor-pointer flex items-center justify-center p-0">
           <span className="material-symbols-outlined">notifications</span>
         </button>
-        <button className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 bg-transparent border-none cursor-pointer flex items-center justify-center p-0">
-          <span className="material-symbols-outlined">settings</span>
+        <button 
+          id="theme-toggle-btn"
+          onClick={onToggleTheme}
+          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 bg-transparent border-none cursor-pointer flex items-center justify-center p-0"
+        >
+          <span className="material-symbols-outlined">
+            {theme === "dark" ? "light_mode" : "dark_mode"}
+          </span>
         </button>
 
         <div

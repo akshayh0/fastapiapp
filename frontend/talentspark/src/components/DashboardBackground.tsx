@@ -46,6 +46,7 @@ export function DashboardBackground() {
       uniform float u_time;
       uniform vec2 u_resolution;
       uniform vec2 u_mouse;
+      uniform float u_dark_mode;
 
       float noise(vec2 p) {
         return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -64,9 +65,9 @@ export function DashboardBackground() {
           p += vec2(0.7/fi * sin(fi * p.y + t + 0.3 * fi) + 0.8, 0.4/fi * sin(fi * p.x + t + 0.5 * fi) + 1.6);
         }
         
-        vec3 color1 = vec3(0.043, 0.075, 0.149); // #0b1326
-        vec3 color2 = vec3(0.486, 0.227, 0.929); // #7c3aed
-        vec3 color3 = vec3(0.12, 0.94, 1.0);     // Cyan accent
+        vec3 color1 = mix(vec3(0.97, 0.98, 1.0), vec3(0.043, 0.075, 0.149), u_dark_mode); // #f8fafc vs #0b1326
+        vec3 color2 = mix(vec3(0.85, 0.75, 0.95), vec3(0.486, 0.227, 0.929), u_dark_mode); // Light purple vs #7c3aed
+        vec3 color3 = mix(vec3(0.70, 0.90, 1.0), vec3(0.12, 0.94, 1.0), u_dark_mode);     // Light cyan vs Cyan
         
         float intensity = sin(p.x + p.y) * 0.5 + 0.5;
         vec3 finalColor = mix(color1, color2, intensity * 0.4);
@@ -125,6 +126,7 @@ export function DashboardBackground() {
     const uTime = gl.getUniformLocation(prog, "u_time");
     const uRes = gl.getUniformLocation(prog, "u_resolution");
     const uMouse = gl.getUniformLocation(prog, "u_mouse");
+    const uDarkMode = gl.getUniformLocation(prog, "u_dark_mode");
 
     const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
@@ -146,6 +148,10 @@ export function DashboardBackground() {
       if (uTime) gl.uniform1f(uTime, t * 0.001);
       if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
       if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+      
+      const isDark = document.documentElement.classList.contains("dark");
+      if (uDarkMode) gl.uniform1f(uDarkMode, isDark ? 1.0 : 0.0);
+
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       animationId = requestAnimationFrame(render);
     };

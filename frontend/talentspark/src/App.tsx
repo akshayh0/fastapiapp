@@ -44,6 +44,26 @@ function App() {
   );
   const [page, setPage] = useState<"login" | "register">("login");
   const [activeTab, setActiveTab] = useState<string>("assistant");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("theme");
+    return saved === "light" ? "light" : "dark";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    } else {
+      root.classList.add("light");
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
   const [activities, setActivities] = useState<Activity[]>([
     {
       id: "1",
@@ -240,7 +260,7 @@ function App() {
       <DashboardBackground />
 
       {/* Top Navigation */}
-      <NavBar onLogout={handleLogout} />
+      <NavBar onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme} />
 
       {/* Side Navigation */}
       <SideNav

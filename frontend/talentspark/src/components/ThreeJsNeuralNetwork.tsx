@@ -83,6 +83,12 @@ export function ThreeJsNeuralNetwork() {
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
+      // Adapt to theme
+      const isDark = document.documentElement.classList.contains("dark");
+      material.blending = isDark ? THREE.AdditiveBlending : THREE.NormalBlending;
+      material.opacity = isDark ? 0.8 : 0.9;
+      material.color.setHex(isDark ? 0x7c3aed : 0x6d28d9);
+
       const posArray = geometry.attributes.position.array as Float32Array;
 
       for (let i = 0; i < particleCount; i++) {
