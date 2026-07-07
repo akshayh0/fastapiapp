@@ -295,3 +295,135 @@ h1, h2, h3, h4 {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--graphite);
 }
+
+/* "STAMPED & FILED" Transition Animations */
+
+/* Button Ink Spread Background */
+.btn-ink-spread-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background-color: var(--stamp);
+  z-index: 1;
+}
+
+.btn-ink-spread-active .btn-ink-spread-bg {
+  animation: inkSpread 150ms ease-out forwards;
+}
+
+@keyframes inkSpread {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Stamp Impression styles */
+.large-stamp {
+  border: 3px solid var(--stamp);
+  color: var(--stamp);
+  background: transparent;
+  padding: 8px 20px;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  border-radius: 0;
+}
+
+.large-stamp.declined {
+  border-color: var(--ink) !important;
+  color: var(--ink) !important;
+  animation: stampDropAndFade 550ms ease-out forwards;
+}
+
+@keyframes stampDropAndFade {
+  0% {
+    transform: translateY(-8px) scale(1.05);
+    opacity: 0;
+  }
+  22% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  73% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(0.98);
+    opacity: 0;
+  }
+}
+
+.animate-stamp-drop {
+  animation: stampDrop 120ms ease-out forwards;
+}
+
+@keyframes stampDrop {
+  from {
+    transform: translateY(-8px) scale(1.05);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Card Close Sweeping Line */
+.sweeping-line {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1.5px;
+  background-color: var(--line);
+  z-index: 45;
+  width: 0%;
+}
+
+.animate-sweep {
+  animation: sweepLine 150ms ease-out forwards;
+}
+
+@keyframes sweepLine {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Workspace reveal */
+.animate-workspace-reveal {
+  animation: workspaceReveal 150ms ease-out forwards;
+}
+
+@keyframes workspaceReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Reduced Motion Overrides */
+@media (prefers-reduced-motion: reduce) {
+  .btn-ink-spread-active .btn-ink-spread-bg {
+    animation: none !important;
+    width: 100% !important;
+  }
+  .animate-stamp-drop {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .animate-sweep {
+    animation: none !important;
+    width: 0% !important;
+  }
+  .animate-workspace-reveal {
+    animation: workspaceReveal 100ms ease-out forwards !important;
+  }
+}
+

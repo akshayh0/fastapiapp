@@ -6,24 +6,90 @@ type Props = {
   onSwitchToRegister: () => void;
 };
 
+type TransitionPhase = "idle" | "submitting" | "stamping-success" | "stamping-failed" | "closing";
+
 function Login({ onLogin, onSwitchToRegister }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isWarping, setIsWarping] = useState(false);
+  const [phase, setPhase] = useState<TransitionPhase>("idle");
+  const [errorText, setErrorText] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotionRef = useRef(false);
+
+  useEffect(() => {
+    prefersReducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  const isProcessing = phase !== "idle";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await login({ email, password });
-      setIsWarping(true);
-      setTimeout(() => {
+    setErrorText(null);
+
+    const prefersReduced = prefersReducedMotionRef.current;
+
+    if (prefersReduced) {
+      setPhase("submitting");
+      try {
+        const response = await login({ email, password });
         onLogin(response.access_token);
-      }, 500);
-    } catch (error) {
-      console.error("Error during login:", error);
-      alert("Login failed. Please check your credentials.");
+      } catch (error: any) {
+        console.error("Error during login:", error);
+        setErrorText(error.message || "AUTHENTICATION SYSTEM DENIED STATUS");
+        setPhase("idle");
+      }
+      return;
     }
+
+    // Normal animated sequence
+    setPhase("submitting");
+    let apiCompleted = false;
+    let apiSuccess = false;
+    let apiToken: string | null = null;
+    let apiErrorMsg = "AUTHENTICATION SYSTEM DENIED STATUS";
+
+    // Start API call immediately (optimistic UI starts running 0-150ms button animation)
+    const apiPromise = login({ email, password })
+      .then((response) => {
+        apiCompleted = true;
+        apiSuccess = true;
+        apiToken = response.access_token;
+      })
+      .catch((err) => {
+        apiCompleted = true;
+        apiSuccess = false;
+        apiErrorMsg = err.message || "AUTHENTICATION SYSTEM DENIED STATUS";
+      });
+
+    // Step 1 finishes at 150ms. Wait for API to finish.
+    setTimeout(async () => {
+      await apiPromise;
+
+      if (apiSuccess && apiToken) {
+        // Step 2: Stamp impression drops (ACCESS GRANTED)
+        setPhase("stamping-success");
+
+        // Hold stamp for 150ms (takes 150ms to 300ms)
+        setTimeout(() => {
+          // Step 3: Card closes (300ms to 450ms)
+          setPhase("closing");
+
+          // Hold closing animation for 150ms
+          setTimeout(() => {
+            if (apiToken) onLogin(apiToken);
+          }, 150);
+        }, 150);
+      } else {
+        // Step 2 (failed): Stamp impression drops (DECLINED)
+        setPhase("stamping-failed");
+
+        // Hold stamp for 550ms (120ms drop + 280ms hold + 150ms fade out)
+        setTimeout(() => {
+          setPhase("idle");
+          setErrorText(apiErrorMsg);
+        }, 550);
+      }
+    }, 150);
   };
 
   return (
@@ -42,11 +108,31 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
 
         <section
           ref={cardRef}
-          className="antigravity-card p-8 flex flex-col gap-6 relative text-left animate-fade-in-up"
+          className={`antigravity-card p-8 flex flex-col gap-6 relative text-left ${
+            phase === "closing"
+              ? "opacity-0 scale-[0.96] transition-all duration-150 ease-out"
+              : "animate-fade-in-up"
+          }`}
           id="login-card"
         >
           {/* Manila Folder Tab */}
           <div className="folder-tab">USER CREDENTIAL SCAN</div>
+
+          {/* Sweeping Line for step 3 folder closing */}
+          {phase === "closing" && <div className="sweeping-line animate-sweep" />}
+
+          {/* Stamp Impression overlay */}
+          {(phase === "stamping-success" || phase === "stamping-failed") && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 bg-transparent">
+              <div
+                className={`large-stamp ${
+                  phase === "stamping-failed" ? "declined" : "animate-stamp-drop"
+                }`}
+              >
+                {phase === "stamping-success" ? "ACCESS GRANTED" : "DECLINED"}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1">
             <h2 className="text-[32px] text-[#14171A] font-bold m-0 leading-tight" style={{ fontFamily: "'Space Mono', monospace" }}>
@@ -75,7 +161,7 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isWarping}
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -97,29 +183,52 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={isWarping}
+                  disabled={isProcessing}
                 />
               </div>
+              {errorText && (
+                <div className="text-[10px] text-[#767B82] font-mono uppercase tracking-wide mt-1">
+                  [ ERR: {errorText.toUpperCase()} ]
+                </div>
+              )}
             </div>
 
             {/* CTA */}
             <button
-              className="mt-2 py-3 px-6 bg-[#3F5B44] text-white font-bold rounded font-mono text-xs hover:opacity-90 active:scale-95 transition-all duration-100 flex items-center justify-center gap-2 border-none cursor-pointer disabled:opacity-50"
+              className={`mt-2 py-3 px-6 text-white font-bold rounded font-mono text-xs hover:opacity-90 active:scale-95 transition-all duration-100 flex items-center justify-center gap-2 border-none cursor-pointer relative overflow-hidden ${
+                isProcessing
+                  ? "bg-[#DDE0DA] text-[#14171A] btn-ink-spread-active"
+                  : "bg-[#3F5B44]"
+              }`}
               id="login-btn"
               type="submit"
-              disabled={isWarping}
+              disabled={isProcessing}
             >
-              {isWarping ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-                  <span>AUTHENTICATING...</span>
-                </>
-              ) : (
-                <>
+              {/* The spreading ink background */}
+              {isProcessing && <div className="btn-ink-spread-bg" />}
+
+              {/* Button content with z-index to stay above the spreading background */}
+              <div className="relative z-10 w-full h-4 flex items-center justify-center">
+                <span
+                  className={`absolute transition-opacity duration-150 flex items-center gap-2 ${
+                    phase === "submitting" || phase === "stamping-success" || phase === "closing"
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }`}
+                >
                   <span>SIGN IN</span>
                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                </>
-              )}
+                </span>
+                <span
+                  className={`absolute transition-opacity duration-150 font-mono ${
+                    phase === "submitting" || phase === "stamping-success" || phase === "closing"
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  VERIFIED
+                </span>
+              </div>
             </button>
           </form>
 
@@ -130,7 +239,7 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
               <button
                 type="button"
                 onClick={onSwitchToRegister}
-                disabled={isWarping}
+                disabled={isProcessing}
                 className="text-[#3F5B44] hover:underline bg-transparent border-none p-0 cursor-pointer font-bold font-mono"
               >
                 REGISTER

@@ -255,7 +255,7 @@ function App() {
   }
 
   return (
-    <div className="bg-[#F4F5F2] text-[#14171A] font-body-md min-h-screen overflow-x-hidden relative">
+    <div className="bg-[#F4F5F2] text-[#14171A] font-body-md min-h-screen overflow-x-hidden relative animate-workspace-reveal">
       {/* Top Navigation */}
       <NavBar onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme} />
 
@@ -390,10 +390,11 @@ function App() {
                 <div className="space-y-3.5 max-h-[400px] overflow-y-auto pr-1 py-1">
                   {activities.map((activity, index) => {
                     const numberStr = String(index + 1).padStart(3, "0");
+                    const staggerClass = `docket-stagger-${Math.min(5, index + 1)}`;
                     return (
                       <div
                         key={activity.id}
-                        className="flex gap-4 items-start text-xs border-b border-dashed border-[#DDE0DA] pb-2 font-mono"
+                        className={`flex gap-4 items-start text-xs border-b border-dashed border-[#DDE0DA] pb-2 font-mono ${staggerClass}`}
                       >
                         <span className="docket-index shrink-0 text-[#767B82]">{numberStr}</span>
                         <div className="flex-grow">
