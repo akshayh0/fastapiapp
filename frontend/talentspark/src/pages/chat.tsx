@@ -1,85 +1,237 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { sendMessage } from "../Services/chatService";
+import { ragAsk } from "../Services/ragService";
+
+interface Message {
+  sender: "user" | "ai";
+  text: string;
+}
 
 const Chat = () => {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("Awaiting your career strategy or skill-gap synthesis inquiry...");
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      sender: "ai",
+      text: "Hello! I am your Career AI Assistant. Select a mode above and ask me anything about your professional roadmap or indexed job markets.",
+    },
+  ]);
   const [loading, setLoading] = useState(false);
+  const [chatMode, setChatMode] = useState<"standard" | "rag">("standard");
+
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const handleSend = async (queryText?: string) => {
     const textToSend = queryText !== undefined ? queryText : question;
     if (!textToSend.trim()) return;
 
+    // Add user message
+    const userMsg: Message = { sender: "user", text: textToSend };
+    setMessages((prev) => [...prev, userMsg]);
+    
+    if (queryText === undefined) {
+      setQuestion("");
+    }
+
     setLoading(true);
     try {
-      const response = await sendMessage({
-        question: textToSend,
-      });
-      setAnswer(response.answer);
-      if (queryText === undefined) {
-        setQuestion("");
+      // Gather previous conversation turns excluding the generic greetings
+      const chatTurns = messages.filter(
+        (m) =>
+          !m.text.includes("Hello! I am your Career AI Assistant") &&
+          !m.text.includes("General Assistant active") &&
+          !m.text.includes("RAG mode active")
+      );
+
+      let promptPayload = textToSend;
+      if (chatTurns.length > 0) {
+        const formattedHistory = chatTurns
+          .map((msg) => `${msg.sender === "user" ? "Human" : "Assistant"}: ${msg.text}`)
+          .join("\n");
+        promptPayload = `Previous Conversation History:\n${formattedHistory}\n\nHuman: ${textToSend}`;
       }
+
+      let responseText = "";
+      if (chatMode === "rag") {
+        const response = await ragAsk(promptPayload);
+        responseText = response.answer;
+      } else {
+        const response = await sendMessage({
+          question: promptPayload,
+        });
+        responseText = response.answer;
+      }
+      
+      // Add AI response
+      setMessages((prev) => [...prev, { sender: "ai", text: responseText }]);
     } catch (error) {
       console.error(error);
-      alert("AI Assistant connection failed");
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: "ERROR: Failed to establish contact with the career intelligence core. Please check network connections.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleQuickAction = (actionText: string) => {
-    setQuestion(actionText);
     handleSend(actionText);
   };
 
-  return (
-    <div className="space-y-6 text-left">
-      <style>{`
-        .glass-panel {
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-      `}</style>
+  const clearHistory = () => {
+    setMessages([
+      {
+        sender: "ai",
+        text:
+          chatMode === "rag"
+            ? "RAG mode active. Ask me details about salaries, technical requirements, or job locations!"
+            : "General Assistant active. Ask me about career choices, resumes, or interview tactics!",
+      },
+    ]);
+  };
 
-      {/* Response Box */}
-      <div className="glass-panel p-8 rounded-3xl min-h-[160px] relative overflow-hidden" id="response-box">
-        <div className="flex gap-4 mb-4 items-start relative z-10">
-          <span className="material-symbols-outlined text-primary p-2 bg-primary/10 rounded-lg flex items-center justify-center">
-            auto_awesome
-          </span>
-          <div className="flex-1">
-            <p className="font-label-sm text-primary mb-2 text-xs uppercase tracking-widest" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              CAREER AI SYSTEM
-            </p>
-            <div className="text-body-md text-on-surface leading-relaxed text-sm whitespace-pre-line">
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-                  Synthesizing market models and skill paths...
-                </span>
+  return (
+    <div className="space-y-6 text-left animate-fade-in-up">
+      {/* Control Actions Header */}
+      <div className="flex justify-between items-center flex-wrap gap-3">
+        {/* Mode Selector */}
+        <div className="flex gap-1 p-1 bg-white/5 rounded-xl border border-white/5 w-fit">
+          <button
+            onClick={() => {
+              setChatMode("standard");
+              setMessages([
+                {
+                  sender: "ai",
+                  text: "General Assistant active. Ask me about career choices, resumes, or interview tactics!",
+                },
+              ]);
+            }}
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-none flex items-center gap-2 ${
+              chatMode === "standard"
+                ? "bg-primary text-white shadow-md"
+                : "text-on-surface-variant hover:text-white bg-transparent"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">forum</span>
+            General AI
+          </button>
+          <button
+            onClick={() => {
+              setChatMode("rag");
+              setMessages([
+                {
+                  sender: "ai",
+                  text: "RAG mode active. Ask me details about salaries, technical requirements, or job locations!",
+                },
+              ]);
+            }}
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border-none flex items-center gap-2 ${
+              chatMode === "rag"
+                ? "bg-primary text-white shadow-md"
+                : "text-on-surface-variant hover:text-white bg-transparent"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">database</span>
+            Job Knowledge (RAG)
+          </button>
+        </div>
+
+        {/* Action button */}
+        <button
+          onClick={clearHistory}
+          disabled={loading}
+          title="Clear chat history"
+          className="p-2 bg-[#F4F5F2] hover:bg-[#DDE0DA] text-[#767B82] hover:text-[#14171A] border border-[#DDE0DA] rounded cursor-pointer flex items-center justify-center"
+        >
+          <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
+        </button>
+      </div>
+
+      {/* Chat Conversation History Panel */}
+      <div className="antigravity-card p-6 pt-8 min-h-[350px] max-h-[450px] overflow-y-auto flex flex-col gap-4 relative">
+        <div className="folder-tab">DOCKET HISTORY LOG</div>
+
+        {messages.map((msg, index) => {
+          const isUser = msg.sender === "user";
+          return (
+            <div
+              key={index}
+              className={`flex w-full animate-fade-in-up ${
+                isUser ? "justify-end" : "justify-start"
+              }`}
+            >
+              {isUser ? (
+                // User Message bubble - Clean & Flat
+                <div className="bg-[#F4F5F2] border border-[#DDE0DA] text-[#14171A] rounded-lg rounded-tr-none py-2.5 px-4 max-w-[80%] text-sm leading-relaxed whitespace-pre-line font-medium shadow-none">
+                  {msg.text}
+                </div>
               ) : (
-                answer
+                // AI Bot Message bubble - Clean & Flat
+                <div className="flex gap-3 items-start max-w-[90%] bg-white border border-[#DDE0DA] rounded-lg rounded-tl-none py-3 px-4 shadow-none">
+                  <div className="flex-1 space-y-1">
+                    <p
+                      className="font-mono text-[#3F5B44] font-bold text-[9px] uppercase tracking-widest flex items-center gap-1.5"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      <span className="stamp-badge">
+                        {chatMode === "rag" ? "RAG ENGINE" : "CORE AI"}
+                      </span>
+                    </p>
+                    <div className="text-body-md text-[#14171A] leading-relaxed text-sm whitespace-pre-line">
+                      {msg.text}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
+          );
+        })}
+
+        {/* Loading Pulsing Dots */}
+        {loading && (
+          <div className="flex justify-start animate-fade-in-up">
+            <div className="flex gap-3 items-start max-w-[90%] bg-white border border-[#DDE0DA] rounded-lg rounded-tl-none py-3 px-4 shadow-none">
+              <div className="flex-1">
+                <p
+                  className="font-mono text-[#3F5B44] font-bold text-[9px] uppercase tracking-widest mb-1.5"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  Calculating Output
+                </p>
+                <div className="flex items-center gap-1.5 py-1 px-1 text-[#767B82]">
+                  <div className="w-1.5 h-1.5 bg-[#3F5B44] rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                  <div className="w-1.5 h-1.5 bg-[#3F5B44] rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                  <div className="w-1.5 h-1.5 bg-[#3F5B44] rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="absolute bottom-0 right-0 p-4 opacity-10 pointer-events-none select-none">
-          <span className="material-symbols-outlined text-[120px] translate-y-1/3 translate-x-1/3">
-            bolt
-          </span>
-        </div>
+        )}
+        <div ref={messageEndRef} />
       </div>
 
       {/* Input Area */}
-      <div className="glass-panel p-2 rounded-2xl border-white/20 focus-within:ring-2 focus-within:ring-primary/40 transition-all duration-300">
+      <div className="antigravity-card p-2 pt-6 relative">
+        <div className="folder-tab">COMMAND TRANSMITTER</div>
         <div className="flex items-center gap-2">
           <textarea
-            className="flex-grow bg-transparent border-none focus:ring-0 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 resize-none h-14 font-body-md text-sm outline-none"
+            className="flex-grow bg-transparent border-none focus:ring-0 px-4 py-2 text-[#14171A] placeholder:text-[#767B82]/40 resize-none h-14 font-body-md text-sm outline-none"
             id="ai-input"
-            placeholder="Ask your question (e.g. How can I transition into AI Engineering?)..."
+            placeholder={
+              chatMode === "rag"
+                ? "Ask about job requirements (e.g. Which Python jobs offer over 100k?)..."
+                : "Ask your question (e.g. How can I transition into AI Engineering?)..."
+            }
             rows={1}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
@@ -93,34 +245,39 @@ const Chat = () => {
           />
           <button
             onClick={() => handleSend()}
-            disabled={loading}
-            className="bg-primary text-on-primary w-12 h-12 rounded-xl flex items-center justify-center shadow-lg hover:shadow-primary/30 active:scale-95 transition-all group cursor-pointer border-none"
+            disabled={loading || !question.trim()}
+            className="bg-[#3F5B44] text-white w-10 h-10 rounded flex items-center justify-center shadow-none hover:opacity-90 active:scale-95 transition-all duration-100 cursor-pointer border-none disabled:opacity-50 disabled:pointer-events-none shrink-0"
           >
             {loading ? (
-              <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
+              <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
             ) : (
-              <span className="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[20px]">
-                send
-              </span>
+              <span className="material-symbols-outlined text-[18px]">send</span>
             )}
           </button>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        {[
-          "Optimize Resume",
-          "Salary Negotiation",
-          "Skill Analysis",
-          "Market Outlook"
-        ].map((action) => (
+      <div className="flex flex-wrap gap-2.5">
+        {(chatMode === "rag"
+          ? [
+              "Show me Remote React jobs",
+              "Which jobs require AWS skills?",
+              "Highest paying python positions",
+              "Entry level software engineer listings"
+            ]
+          : [
+              "Optimize Resume",
+              "Salary Negotiation",
+              "Skill Analysis",
+              "Market Outlook"
+            ]
+        ).map((action) => (
           <button
             key={action}
             onClick={() => handleQuickAction(action)}
             disabled={loading}
-            className="px-4 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/40 text-xs font-label-sm text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 cursor-pointer"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            className="px-3.5 py-1.5 border border-[#DDE0DA] bg-white text-[#767B82] hover:text-[#14171A] hover:border-[#767B82] rounded font-mono text-xs cursor-pointer transition-colors"
           >
             {action}
           </button>

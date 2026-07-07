@@ -17,52 +17,48 @@ export function ThreeJsNeuralNetwork() {
     const height = container.clientHeight || 300;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // Create a "Neural Network" particle system
-    const particleCount = 120;
+    // Create Quantum Sphere Particles - Clean & Subtle
+    const particleCount = 45;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
-    const velocities: any[] = [];
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 10;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-      velocities.push(
-        new THREE.Vector3(
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01
-        )
-      );
+      const phi = Math.acos(-1 + (2 * i) / particleCount);
+      const theta = Math.sqrt(particleCount * Math.PI) * phi;
+      const radius = 2.0;
+      
+      positions[i * 3] = radius * Math.cos(theta) * Math.sin(phi);
+      positions[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
+      positions[i * 3 + 2] = radius * Math.cos(phi);
     }
 
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
     const material = new THREE.PointsMaterial({
       color: 0x7c3aed,
-      size: 0.12,
+      size: 0.05,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.12,
       blending: THREE.AdditiveBlending,
     });
 
     const points = new THREE.Points(geometry, material);
     scene.add(points);
 
-    camera.position.z = 5;
+    camera.position.z = 4.0;
 
     let mouseX = 0;
     let mouseY = 0;
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-      mouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+      mouseY = -(e.clientY / window.innerHeight - 0.5) * 0.5;
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -83,33 +79,35 @@ export function ThreeJsNeuralNetwork() {
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      // Adapt to theme
       const isDark = document.documentElement.classList.contains("dark");
       material.blending = isDark ? THREE.AdditiveBlending : THREE.NormalBlending;
-      material.opacity = isDark ? 0.8 : 0.9;
       material.color.setHex(isDark ? 0x7c3aed : 0x6d28d9);
+      material.opacity = isDark ? 0.12 : 0.15;
 
       const posArray = geometry.attributes.position.array as Float32Array;
+      const time = Date.now() * 0.001;
 
+      // Slow, subtle ripple
       for (let i = 0; i < particleCount; i++) {
-        posArray[i * 3] += velocities[i].x;
-        posArray[i * 3 + 1] += velocities[i].y;
-        posArray[i * 3 + 2] += velocities[i].z;
+        const phi = Math.acos(-1 + (2 * i) / particleCount);
+        const theta = Math.sqrt(particleCount * Math.PI) * phi;
+        
+        const wave = Math.sin(time * 0.5 + phi) * 0.08;
+        const radius = 2.0 + wave;
 
-        // Boundary check
-        if (Math.abs(posArray[i * 3]) > 5) velocities[i].x *= -1;
-        if (Math.abs(posArray[i * 3 + 1]) > 5) velocities[i].y *= -1;
-        if (Math.abs(posArray[i * 3 + 2]) > 5) velocities[i].z *= -1;
+        posArray[i * 3] = radius * Math.cos(theta) * Math.sin(phi);
+        posArray[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
+        posArray[i * 3 + 2] = radius * Math.cos(phi);
       }
-
       geometry.attributes.position.needsUpdate = true;
 
-      points.rotation.y += 0.002;
-      points.rotation.x += 0.001;
+      // Very slow spin
+      points.rotation.y += 0.0008;
+      points.rotation.x += 0.0004;
 
-      // Smooth camera follow
-      camera.position.x += (mouseX - camera.position.x) * 0.05;
-      camera.position.y += (mouseY - camera.position.y) * 0.05;
+      // Slow cam follow
+      camera.position.x += (mouseX - camera.position.x) * 0.02;
+      camera.position.y += (mouseY - camera.position.y) * 0.02;
       camera.lookAt(scene.position);
 
       renderer.render(scene, camera);

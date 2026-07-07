@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { register } from "../Services/AuthService";
-import { LoginBackground } from "../components/LoginBackground";
 
 type Props = {
   onSwitchToLogin: () => void;
@@ -14,34 +13,15 @@ function Register({ onSwitchToLogin }: Props) {
   const [isWarping, setIsWarping] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const handleCardParallax = (e: MouseEvent) => {
-      if (isWarping || !cardRef.current) return;
-      const xAxis = (window.innerWidth / 2 - e.clientX) / 80;
-      const yAxis = (window.innerHeight / 2 - e.clientY) / 80;
-      cardRef.current.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-    };
-
-    window.addEventListener("mousemove", handleCardParallax);
-    return () => {
-      window.removeEventListener("mousemove", handleCardParallax);
-    };
-  }, [isWarping]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // 1. Authenticate first
       await register({ name, email, password, role });
-      
-      // 2. Play warp transition
       setIsWarping(true);
-      
-      // 3. Switch to login screen after transition ends
       setTimeout(() => {
         alert("Registration successful! Please login.");
         onSwitchToLogin();
-      }, 1200);
+      }, 500);
     } catch (error) {
       console.error("Error during registration:", error);
       alert("Registration failed. Please try again.");
@@ -50,87 +30,32 @@ function Register({ onSwitchToLogin }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 w-screen h-screen z-50 flex items-center justify-center font-body-md text-on-surface overflow-hidden bg-[#0b1326] ${
-        isWarping ? "warp-active" : ""
-      }`}
+      className="fixed inset-0 w-screen h-screen z-50 flex items-center justify-center overflow-hidden bg-[#F4F5F2]"
       style={{ perspective: "1000px" }}
     >
-      <style>{`
-        .glass-panel {
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-          transition: transform 1.2s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.8s ease-out;
-        }
-
-        .glowing-input:focus {
-          outline: none;
-          border-bottom-color: #d2bbff;
-          box-shadow: 0 4px 12px -2px rgba(210, 187, 255, 0.3);
-        }
-
-        .pulse-animation {
-          animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse-glow {
-          0%, 100% {
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.4);
-          }
-          50% {
-            box-shadow: 0 0 25px rgba(124, 58, 237, 0.8);
-          }
-        }
-
-        /* Warp transition states */
-        .warp-active .glass-panel {
-          transform: scale(0.8) !important;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .warp-active #background-container {
-          transform: scale(3);
-          transition: transform 2.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #background-container {
-          transition: transform 1s ease-out;
-          transform: scale(1);
-        }
-
-        .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-      `}</style>
-
-      {/* WebGL/Three.js Background */}
-      <LoginBackground />
-
       {/* Main Content Wrapper */}
-      <main className="relative z-10 w-full max-w-md px-margin-mobile md:px-0">
+      <main className="relative z-10 w-full max-w-md px-4">
         {/* Brand Identity */}
-        <header className="fixed top-margin-desktop left-margin-desktop">
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight m-0" style={{ fontFamily: "'Hanken Grotesk', sans-serif" }}>
-            CareerAI
-          </h1>
+        <header className="absolute -top-16 left-0">
+          <span className="text-xl font-bold uppercase tracking-widest text-[#14171A]" style={{ fontFamily: "'Space Mono', monospace" }}>
+            CAREER.AI
+          </span>
         </header>
 
-        {/* Register Card */}
         <section
           ref={cardRef}
-          className="glass-panel rounded-xl p-10 flex flex-col gap-6 relative text-left"
+          className="antigravity-card p-8 flex flex-col gap-6 relative text-left animate-fade-in-up"
           id="register-card"
-          style={{ transformStyle: "preserve-3d" }}
         >
+          {/* Manila Folder Tab */}
+          <div className="folder-tab">NEW RECORD CREATION</div>
+
           <div className="space-y-1">
-            <h2 className="font-headline-lg text-headline-lg text-white m-0" style={{ fontFamily: "'Hanken Grotesk', sans-serif" }}>
+            <h2 className="text-[32px] text-[#14171A] font-bold m-0 leading-tight" style={{ fontFamily: "'Space Mono', monospace" }}>
               Join CareerAI
             </h2>
-            <p className="text-on-surface-variant font-body-md text-sm">
-              Begin your precision career journey.
+            <p className="text-[#767B82] text-xs font-mono uppercase">
+              [ Open Career Dossier file ]
             </p>
           </div>
 
@@ -138,156 +63,127 @@ function Register({ onSwitchToLogin }: Props) {
             {/* Name Field */}
             <div className="flex flex-col gap-1">
               <label
-                className="font-label-sm text-label-sm text-primary uppercase tracking-widest text-[10px]"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#767B82] font-mono"
                 htmlFor="name"
               >
                 Full Name
               </label>
-              <div className="relative group">
-                <span className="material-symbols-outlined absolute left-0 bottom-2 text-on-surface-variant">
-                  person
-                </span>
-                <input
-                  className="w-full bg-transparent border-b border-outline-variant py-2 pl-8 text-on-surface glowing-input transition-all placeholder:text-outline-variant text-base"
-                  id="name"
-                  placeholder="Jane Doe"
-                  required
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isWarping}
-                />
-              </div>
+              <input
+                className="modern-input w-full py-2.5 px-3 text-xs text-[#14171A]"
+                id="name"
+                placeholder="Jane Doe"
+                required
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isWarping}
+              />
             </div>
 
             {/* Email Field */}
             <div className="flex flex-col gap-1">
               <label
-                className="font-label-sm text-label-sm text-primary uppercase tracking-widest text-[10px]"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#767B82] font-mono"
                 htmlFor="email"
               >
-                Email
+                Email Address
               </label>
-              <div className="relative group">
-                <span className="material-symbols-outlined absolute left-0 bottom-2 text-on-surface-variant">
-                  mail
-                </span>
-                <input
-                  className="w-full bg-transparent border-b border-outline-variant py-2 pl-8 text-on-surface glowing-input transition-all placeholder:text-outline-variant text-base"
-                  id="email"
-                  placeholder="jane.doe@career.ai"
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isWarping}
-                />
-              </div>
+              <input
+                className="modern-input w-full py-2.5 px-3 text-xs text-[#14171A]"
+                id="email"
+                placeholder="jane.doe@career.ai"
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isWarping}
+              />
             </div>
 
             {/* Password Field */}
             <div className="flex flex-col gap-1">
               <label
-                className="font-label-sm text-label-sm text-primary uppercase tracking-widest text-[10px]"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#767B82] font-mono"
                 htmlFor="password"
               >
-                Password
+                Password Code
               </label>
-              <div className="relative group">
-                <span className="material-symbols-outlined absolute left-0 bottom-2 text-on-surface-variant">
-                  lock
-                </span>
-                <input
-                  className="w-full bg-transparent border-b border-outline-variant py-2 pl-8 text-on-surface glowing-input transition-all placeholder:text-outline-variant text-base"
-                  id="password"
-                  placeholder="••••••••"
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isWarping}
-                />
-              </div>
+              <input
+                className="modern-input w-full py-2.5 px-3 text-xs text-[#14171A]"
+                id="password"
+                placeholder="••••••••"
+                required
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isWarping}
+              />
             </div>
 
             {/* Role Field */}
             <div className="flex flex-col gap-1">
               <label
-                className="font-label-sm text-label-sm text-primary uppercase tracking-widest text-[10px]"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#767B82] font-mono"
                 htmlFor="role"
               >
-                Role
+                Professional Role
               </label>
-              <div className="relative group">
-                <span className="material-symbols-outlined absolute left-0 bottom-2 text-on-surface-variant">
-                  badge
-                </span>
-                <input
-                  className="w-full bg-transparent border-b border-outline-variant py-2 pl-8 text-on-surface glowing-input transition-all placeholder:text-outline-variant text-base"
-                  id="role"
-                  placeholder="e.g. Developer, Admin, Candidate"
-                  required
-                  type="text"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={isWarping}
-                />
-              </div>
+              <input
+                className="modern-input w-full py-2.5 px-3 text-xs text-[#14171A]"
+                id="role"
+                placeholder="e.g. Developer, Admin, Candidate"
+                required
+                type="text"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                disabled={isWarping}
+              />
             </div>
 
             {/* CTA */}
             <button
-              className={`mt-4 py-4 px-6 bg-gradient-to-r from-primary-container to-inverse-primary text-white font-semibold rounded-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 group ${
-                isWarping ? "opacity-75 pointer-events-none" : "pulse-animation"
-              }`}
+              className="mt-2 py-3 px-6 bg-[#3F5B44] text-white font-bold rounded font-mono text-xs hover:opacity-90 active:scale-95 transition-all duration-100 flex items-center justify-center gap-2 border-none cursor-pointer disabled:opacity-50"
               id="register-btn"
               type="submit"
               disabled={isWarping}
             >
               {isWarping ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin">sync</span>
-                  <span>Registering Account...</span>
+                  <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+                  <span>CREATING RECORD...</span>
                 </>
               ) : (
                 <>
-                  <span>Create Account</span>
-                  <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
-                    arrow_forward
-                  </span>
+                  <span>CREATE DOSSIER</span>
+                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </>
               )}
             </button>
           </form>
 
           {/* Secondary Links */}
-          <footer className="flex flex-col items-center gap-4 pt-4 border-t border-white/5">
-            <p className="text-on-surface-variant text-body-md text-sm m-0">
-              Already have an account?{" "}
+          <footer className="flex flex-col items-center gap-3 pt-4 border-t border-[#DDE0DA]">
+            <p className="text-[#767B82] text-xs m-0 font-mono">
+              ALREADY REGISTERED?{" "}
               <button
                 type="button"
                 onClick={onSwitchToLogin}
                 disabled={isWarping}
-                className="text-primary hover:text-white transition-colors underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer"
+                className="text-[#3F5B44] hover:underline bg-transparent border-none p-0 cursor-pointer font-bold font-mono"
               >
-                Login
+                SIGN IN
               </button>
             </p>
           </footer>
         </section>
 
         {/* Status Indicator */}
-        <div className="fixed bottom-margin-mobile left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-          <div className="w-2 h-2 bg-secondary rounded-full animate-pulse shadow-[0_0_8px_#89ceff]"></div>
+        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-[#3F5B44]"></div>
           <span
-            className="font-label-sm text-label-sm text-secondary opacity-70 text-[10px]"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            className="text-[9px] text-[#767B82] font-mono tracking-wider"
           >
-            AI ENGINE ONLINE
+            SECURE CHANNEL ACTIVE
           </span>
         </div>
       </main>

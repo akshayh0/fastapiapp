@@ -6,8 +6,7 @@ from models import job as job_model
 from models import company as company_model
 from models import users as user_model
 
-from routers import auth, company, job,rag
-from routers.chat import router as chat_router
+from routers import auth, company, job,rag,chat
 
 app = FastAPI()
 

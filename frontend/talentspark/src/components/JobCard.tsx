@@ -90,20 +90,11 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
   };
 
   return (
-    <div className="glass-panel p-6 rounded-2xl flex flex-col gap-6 text-left relative overflow-hidden h-full">
-      <style>{`
-        .glass-panel {
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-      `}</style>
+    <div className="antigravity-card p-6 flex flex-col gap-6 text-left relative overflow-hidden h-full animate-fade-in-up animate-weightless">
 
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-        <span className="material-symbols-outlined text-secondary p-2 bg-secondary/10 rounded-lg">
+        <span className="material-symbols-outlined text-secondary p-2 bg-secondary/10 rounded-lg animate-pulse-glow">
           work
         </span>
         <div>
@@ -130,32 +121,32 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
             return (
               <div
                 key={job.id}
-                className="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col gap-3 transition-all hover:bg-white/10 hover:border-secondary/20"
+                className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col gap-3 transition-all duration-300 hover:bg-white/10 hover:border-secondary/40 hover:-translate-y-0.5 shadow-sm hover:shadow-md animate-fade-in-up"
               >
                 {isEditing ? (
                   <div className="flex flex-col gap-3">
                     <input
                       type="text"
-                      className="w-full bg-[#131b2e] border border-white/10 rounded-lg p-2 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
+                      className="w-full bg-[#131b2e] border border-white/10 rounded-xl p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300"
                       placeholder="Job Title"
                       value={editform.title}
                       onChange={(e) => setEditform({ ...editform, title: e.target.value })}
                     />
                     <input
                       type="text"
-                      className="w-full bg-[#131b2e] border border-white/10 rounded-lg p-2 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
+                      className="w-full bg-[#131b2e] border border-white/10 rounded-xl p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300"
                       placeholder="Salary (e.g. $140,000)"
                       value={editform.salary ?? ""}
                       onChange={(e) => setEditform({ ...editform, salary: e.target.value })}
                     />
                     <textarea
-                      className="w-full bg-[#131b2e] border border-white/10 rounded-lg p-2 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none h-16 resize-none"
+                      className="w-full bg-[#131b2e] border border-white/10 rounded-xl p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none h-16 resize-none transition-all duration-300"
                       placeholder="Job Description"
                       value={editform.description}
                       onChange={(e) => setEditform({ ...editform, description: e.target.value })}
                     />
                     <select
-                      className="w-full bg-[#131b2e] border border-white/10 rounded-lg p-2 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
+                      className="w-full bg-[#131b2e] border border-white/10 rounded-xl p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300"
                       value={editform.company_id}
                       onChange={(e) => setEditform({ ...editform, company_id: Number(e.target.value) })}
                     >
@@ -175,7 +166,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                       </button>
                       <button
                         onClick={handleSave}
-                        className="px-3 py-1.5 rounded-lg bg-secondary text-[#00344d] text-xs font-bold hover:opacity-90 transition-all cursor-pointer border-none"
+                        className="px-3 py-1.5 rounded-lg bg-secondary text-[#00344d] text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer border-none"
                       >
                         Save
                       </button>
@@ -190,7 +181,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                         </h4>
                         {job.salary !== null && job.salary !== undefined && job.salary !== "" && (
                           <span
-                            className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold"
+                            className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider"
                             style={{ fontFamily: "'JetBrains Mono', monospace" }}
                           >
                             {typeof job.salary === "number"
@@ -199,7 +190,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-secondary font-semibold m-0 flex items-center gap-1">
+                      <p className="text-xs text-secondary font-bold m-0 flex items-center gap-1.5">
                         <span className="material-symbols-outlined text-[14px]">corporate_fare</span>
                         {linkedCompany ? linkedCompany.name : `Company ID: ${job.company_id}`}
                       </p>
@@ -217,13 +208,13 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
                           setEditJobId(job.id);
                           setEditform(job);
                         }}
-                        className="p-1 rounded hover:bg-white/5 text-on-surface-variant hover:text-secondary transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-1.5 rounded-lg hover:bg-white/10 text-on-surface-variant hover:text-secondary transition-all border-none bg-transparent cursor-pointer flex items-center justify-center active:scale-90"
                       >
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
                       <button
                         onClick={() => onDelete(job.id)}
-                        className="p-1 rounded hover:bg-white/5 text-on-surface-variant hover:text-error transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-1.5 rounded-lg hover:bg-white/10 text-on-surface-variant hover:text-error transition-all border-none bg-transparent cursor-pointer flex items-center justify-center active:scale-90"
                       >
                         <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
@@ -244,7 +235,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <input
             type="text"
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/40 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300"
             placeholder="Job Title (e.g. Frontend Engineer)"
             value={addform.title}
             onChange={(e) => setAddform({ ...addform, title: e.target.value })}
@@ -252,13 +243,13 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
           />
           <input
             type="text"
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/40 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300"
             placeholder="Salary (e.g. $150,000 / yr)"
             value={addform.salary ?? ""}
             onChange={(e) => setAddform({ ...addform, salary: e.target.value })}
           />
           <select
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none md:col-span-2"
+            className="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/40 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300 md:col-span-2"
             value={addform.company_id}
             onChange={(e) => setAddform({ ...addform, company_id: Number(e.target.value) })}
             required
@@ -274,7 +265,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
             )}
           </select>
           <textarea
-            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-on-surface text-sm focus:border-secondary focus:ring-0 outline-none md:col-span-2 h-16 resize-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/40 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all duration-300 md:col-span-2 h-16 resize-none"
             placeholder="Job Description and requirements..."
             value={addform.description}
             onChange={(e) => setAddform({ ...addform, description: e.target.value })}
@@ -282,7 +273,7 @@ function JobCard({ jobs, companies, onEdit, onDelete, onAdd }: Props) {
         </div>
         <button
           type="submit"
-          className="mt-2 py-3 px-4 bg-gradient-to-r from-secondary-container to-[#004c6e] text-white font-semibold rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer border-none"
+          className="mt-2 py-3.5 px-4 bg-gradient-to-r from-secondary-container to-[#004c6e] hover:shadow-[0_0_15px_rgba(0,162,230,0.4)] text-white font-semibold rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer border-none"
         >
           <span>Track Opening</span>
           <span className="material-symbols-outlined group-hover:translate-x-0.5 transition-transform text-[18px]">
