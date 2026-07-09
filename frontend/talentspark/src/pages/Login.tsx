@@ -43,7 +43,6 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
 
     // Normal animated sequence
     setPhase("submitting");
-    let apiCompleted = false;
     let apiSuccess = false;
     let apiToken: string | null = null;
     let apiErrorMsg = "AUTHENTICATION SYSTEM DENIED STATUS";
@@ -51,12 +50,10 @@ function Login({ onLogin, onSwitchToRegister }: Props) {
     // Start API call immediately (optimistic UI starts running 0-150ms button animation)
     const apiPromise = login({ email, password })
       .then((response) => {
-        apiCompleted = true;
         apiSuccess = true;
         apiToken = response.access_token;
       })
       .catch((err) => {
-        apiCompleted = true;
         apiSuccess = false;
         apiErrorMsg = err.message || "AUTHENTICATION SYSTEM DENIED STATUS";
       });
