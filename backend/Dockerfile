@@ -1,5 +1,5 @@
 # 1. Use the official lightweight Python image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # 2. Set the working directory inside the container
 WORKDIR /app
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # 7. Start the FastAPI application using uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]cd 
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -24,8 +24,7 @@ async def create_company(company: CompanyCreate,db:AsyncSession=Depends(get_db),
 @router.get("/",status_code=status.HTTP_200_OK,response_model=list[CompanyResponse])
 async def get_all_company(db:AsyncSession=Depends(get_db),current_user=Depends(get_current_user)):
     try:
-        result = await db.execute(select(Company)
-        options(selectinload(Company.jobs)))
+        result = await db.execute(select(Company).options(selectinload(Company.jobs)))
         companies = result.scalars().all()
         return companies
     except Exception as e:
@@ -34,7 +33,7 @@ async def get_all_company(db:AsyncSession=Depends(get_db),current_user=Depends(g
 @router.get("/{company_id}",status_code=status.HTTP_200_OK,response_model=CompanyResponse)
 async def get_company(company_id: int,db:AsyncSession=Depends(get_db),current_user=Depends(get_current_user)):
     try:
-        result = await db.execute(select(Company).filter(Company.id == company_id))
+        result = await db.execute(select(Company).filter(Company.id == company_id).options(selectinload(Company.jobs)))
         company = result.scalars().first()
         if not company:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
