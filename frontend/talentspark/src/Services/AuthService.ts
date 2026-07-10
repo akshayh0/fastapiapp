@@ -8,13 +8,13 @@ export const login = async (credentials:LoginRequest):Promise<LoginResponse>=>{
     formData.append("username", credentials.email);
     formData.append("password", credentials.password);
 
-    const response = await axios.post<LoginResponse>(`${API_URL}/login`, formData, {
+    const response = await axios.post<LoginResponse>(`${API_URL}/auth/login`, formData, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
     });
     return response.data;
 }
 
 export const register = async (user:RegisterRequest):Promise<RegisterResponse>=>{
-    const response = await axios.post<RegisterResponse>(`${API_URL}/register`,user);
+    const response = await axios.post<RegisterResponse>(`${API_URL}/auth/register`,user);
     return response.data;
 }
