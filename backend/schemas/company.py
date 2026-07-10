@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from .job import JobResponse
 
@@ -19,9 +19,8 @@ class CompanyUpdate(CompanyBase):
     pass
 
 class CompanyResponse(CompanyBase):
-    id:int
+    id: int
     jobs: list[JobResponse]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 

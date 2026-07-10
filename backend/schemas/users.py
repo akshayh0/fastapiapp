@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class UserBase(BaseModel):
     name: str
@@ -14,8 +14,8 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
         
 class Login_User(BaseModel):
     email: str

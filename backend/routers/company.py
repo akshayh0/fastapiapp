@@ -1,4 +1,7 @@
 from fastapi import APIRouter,HTTPException,Depends,status
+from loguru import logger
+import os
+import time
 from schemas.company import CompanyCreate, CompanyUpdate, CompanyResponse
 from models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,9 +18,13 @@ async def create_company(company: CompanyCreate,db:AsyncSession=Depends(get_db),
         db.add(db_company)
         await db.commit()
         await db.refresh(db_company)
-        return db_company
+        # Ensure related 'jobs' are loaded to avoid async lazy-loading during response serialization
+        result = await db.execute(select(Company).filter(Company.id == db_company.id).options(selectinload(Company.jobs)))
+        company_with_jobs = result.scalars().first()
+        return company_with_jobs
     except Exception as e:
         await db.rollback()
+        logger.exception("Error creating company: {}", e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error creating company: {str(e)}")
 
 
@@ -76,6 +83,24 @@ async def delete_company(company_id: int,db:AsyncSession=Depends(get_db),current
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error deleting company: {str(e)}")
+
+
+# Debug-only endpoint: create a test company without auth when DEBUG=true
+if os.getenv("DEBUG", "false").lower() == "true":
+    @router.post("/debug-create-test-company", status_code=status.HTTP_201_CREATED)
+    async def debug_create_test_company(db: AsyncSession = Depends(get_db)):
+        try:
+            # use timestamped values to avoid unique constraint collisions
+            ts = int(time.time())
+            db_company = Company(name=f"DebugCo-{ts}", email=f"debug{ts}@example.com", phone=str(ts)[-10:], location="Debug")
+            db.add(db_company)
+            await db.commit()
+            await db.refresh(db_company)
+            return {"ok": True, "id": db_company.id}
+        except Exception as e:
+            await db.rollback()
+            logger.exception("Debug create failed: {}", e)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Debug create failed: {str(e)}")
 
 # @router.get("/")
 # def read_company():
