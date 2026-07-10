@@ -3,17 +3,20 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.users import User
-from schemas.users import UserCreate,UserResponse
+from schemas.users import UserCreate,UserResponse,ForgotPasswordRequest,ResetPasswordRequest
 from schemas.token import Token
 from database import get_db
 from utils.security import hash_password,verify_password
-from utils.token import create_access_token
+from utils.token import create_access_token,verify_access_token
+from datetime import timedelta
 
 router = APIRouter(prefix="/auth",tags=["Auth"])
 
 @router.post("/register",response_model=UserResponse)
 async def register(user:UserCreate,db:AsyncSession = Depends(get_db)):
     try:
+        if not user.email.lower().endswith("@gmail.com"):
+            raise HTTPException(status_code=400, detail="Only @gmail.com email addresses are allowed")
         result = await db.execute(select(User).filter(User.email == user.email))
         existing_user = result.scalars().first()
         if existing_user:
@@ -50,3 +53,60 @@ async def login(form_data:OAuth2PasswordRequestForm=Depends(),db:AsyncSession = 
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication server error: {str(e)}")
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        if not request.email.lower().endswith("@gmail.com"):
+            raise HTTPException(status_code=400, detail="Only @gmail.com email addresses are allowed")
+        result = await db.execute(select(User).filter(User.email == request.email))
+        existing_user = result.scalars().first()
+        if not existing_user:
+            return {"message": "Password reset link generated if the email is registered."}
+        
+        reset_token = create_access_token(
+            data={"sub": existing_user.email, "type": "reset"},
+            expires_delta=timedelta(minutes=15)
+        )
+        
+        reset_link = f"http://localhost:5173/?reset_token={reset_token}"
+        print("\n" + "="*80)
+        print(f"PASSWORD RESET REQUEST FOR: {existing_user.email}")
+        print(f"RESET LINK: {reset_link}")
+        print("="*80 + "\n")
+        
+        return {
+            "message": "Password reset link generated if the email is registered.",
+            "reset_token": reset_token,
+            "reset_link": reset_link
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating reset link: {str(e)}")
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        payload = verify_access_token(request.token)
+        if payload.get("type") != "reset":
+            raise HTTPException(status_code=400, detail="Invalid token type")
+        
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=400, detail="Invalid token payload")
+        
+        result = await db.execute(select(User).filter(User.email == email))
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user.hashed_password = hash_password(request.new_password)
+        db.add(user)
+        await db.commit()
+        return {"message": "Password reset successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
