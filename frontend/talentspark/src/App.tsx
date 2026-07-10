@@ -23,7 +23,6 @@ import type { Company } from "./types/company";
 import type { Job } from "./types/job";
 
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 
 interface Activity {
   id: string;
@@ -190,18 +189,11 @@ function App() {
 
   if (!token) {
     return (
-      <>
-        {page === "login" ? (
-          <Login
-            onLogin={handleLogin}
-            onSwitchToRegister={() => setPage("register")}
-          />
-        ) : (
-          <Register
-            onSwitchToLogin={() => setPage("login")}
-          />
-        )}
-      </>
+      <Login
+        onLogin={handleLogin}
+        initialRegister={page === "register"}
+        onModeChange={(mode) => setPage(mode)}
+      />
     );
   }
 
