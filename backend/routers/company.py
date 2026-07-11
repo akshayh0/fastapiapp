@@ -12,9 +12,9 @@ from utils.oauth2 import role_required,get_current_user
 router = APIRouter(prefix="/company",tags=["company"])
 
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=CompanyResponse)
-async def create_company(company: CompanyCreate,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin"]))):
+async def create_company(company: CompanyCreate,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin", "super_admin"]))):
     try:
-        db_company=Company(**company.dict())
+        db_company=Company(**company.dict(), owner_id=current_user.id)
         db.add(db_company)
         await db.commit()
         await db.refresh(db_company)
@@ -51,7 +51,7 @@ async def get_company(company_id: int,db:AsyncSession=Depends(get_db),current_us
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error retrieving company: {str(e)}")
 
 @router.put("/{company_id}",status_code=status.HTTP_201_CREATED)
-async def update_company(company_id: int, company: CompanyUpdate,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin"]))):
+async def update_company(company_id: int, company: CompanyUpdate,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin", "super_admin"]))):
     try:
         result = await db.execute(select(Company).filter(Company.id == company_id))
         db_company = result.scalars().first()
@@ -69,7 +69,7 @@ async def update_company(company_id: int, company: CompanyUpdate,db:AsyncSession
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error updating company: {str(e)}")
 
 @router.delete("/{company_id}",status_code=status.HTTP_204_NO_CONTENT)
-async def delete_company(company_id: int,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin"]))):
+async def delete_company(company_id: int,db:AsyncSession=Depends(get_db),current_user=Depends(role_required(["admin", "super_admin"]))):
     try:
         result = await db.execute(select(Company).filter(Company.id == company_id))
         db_company = result.scalars().first()

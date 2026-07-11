@@ -23,6 +23,9 @@ import type { Company } from "./types/company";
 import type { Job } from "./types/job";
 
 import Login from "./pages/Login";
+import ApproveUsers from "./pages/ApproveUsers";
+import { getCurrentUser } from "./Services/AuthService";
+import { getJobApplications, applyForJob, approveJobApplication } from "./Services/JobService";
 
 interface Activity {
   id: string;
@@ -39,6 +42,8 @@ function App() {
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [applications, setApplications] = useState<any[]>([]);
   const [page, setPage] = useState<"login" | "register">("login");
   const [activeTab, setActiveTab] = useState<string>("workspace");
   const [workspaceMode, setWorkspaceMode] = useState<"chat" | "search" | "resume" | "matcher" | "admin">("chat");
@@ -91,8 +96,10 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setCurrentUser(null);
     setCompanies([]);
     setJobs([]);
+    setApplications([]);
     logActivity("User signed out", "logout");
   };
 
@@ -112,6 +119,33 @@ function App() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (token) {
+      getCurrentUser()
+        .then((user) => {
+          setCurrentUser(user);
+          logActivity(`Logged in as ${user.name} (${user.role})`, "verified_user");
+        })
+        .catch((err) => {
+          console.error("Failed to load user profile:", err);
+          handleLogout();
+        });
+    } else {
+      setCurrentUser(null);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (token && currentUser) {
+      fetchData();
+      getJobApplications()
+        .then((apps) => {
+          setApplications(apps);
+        })
+        .catch((err) => console.error("Error fetching applications:", err));
+    }
+  }, [token, currentUser]);
 
   async function handleEdit(company: Company) {
     try {
@@ -181,11 +215,33 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    if (token) {
-      fetchData();
+  async function handleApplyJob(jobId: number) {
+    try {
+      const newApp = await applyForJob(jobId);
+      setApplications((prev) => [...prev, newApp]);
+      logActivity(`Applied for job ID: ${jobId}`, "assignment_turned_in");
+      alert("Successfully applied for the job!");
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || "Failed to apply.";
+      alert(msg);
     }
-  }, [token]);
+  }
+
+  async function handleApproveApplication(appId: number) {
+    try {
+      await approveJobApplication(appId);
+      // Refresh applications list
+      const apps = await getJobApplications();
+      setApplications(apps);
+      logActivity(`Approved job application ID: ${appId}`, "verified_user");
+      alert("Application approved successfully!");
+    } catch (error: any) {
+      console.error("Approve application failed:", error);
+      const msg = error.response?.data?.detail || "Failed to approve application.";
+      alert(msg);
+    }
+  }
+
 
   if (!token) {
     return (
@@ -253,6 +309,7 @@ function App() {
 
       {/* Side Navigation */}
       <SideNav
+        currentUser={currentUser}
         activeTab={activeTab}
         onTabChange={(tab) => {
           setActiveTab(tab);
@@ -359,6 +416,10 @@ function App() {
               {activeTab === "companies_jobs" && (
                 <div key="companies_jobs" className="animate-fade-in-up">
                   <CompaniesJobs
+                    currentUser={currentUser}
+                    applications={applications}
+                    onApplyJob={handleApplyJob}
+                    onApproveApplication={handleApproveApplication}
                     companies={companies}
                     jobs={jobs}
                     onAddCompany={handleAdd}
@@ -370,7 +431,14 @@ function App() {
                   />
                 </div>
               )}
+
+              {activeTab === "approve_users" && (
+                <div key="approve_users" className="animate-fade-in-up">
+                  <ApproveUsers />
+                </div>
+              )}
             </div>
+
 
             {/* Sidebar Feed (Right) */}
             <div className="lg:col-span-4 mt-6 lg:mt-0">

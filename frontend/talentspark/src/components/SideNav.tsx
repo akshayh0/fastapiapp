@@ -1,11 +1,12 @@
 
 type Props = {
+  currentUser?: any;
   activeTab: string;
   onTabChange: (tab: string) => void;
   onLogout: () => void;
 };
 
-export function SideNav({ activeTab, onTabChange, onLogout }: Props) {
+export function SideNav({ currentUser, activeTab, onTabChange, onLogout }: Props) {
   return (
     <aside
       className="fixed left-0 top-0 bottom-0 h-screen w-64 bg-[#F4F5F2] border-r border-[#DDE0DA] flex flex-col py-6 px-4 gap-4 z-40 hidden md:flex"
@@ -54,7 +55,24 @@ export function SideNav({ activeTab, onTabChange, onLogout }: Props) {
             Companies & Jobs
           </span>
         </button>
+
+        {currentUser?.role === "super_admin" && (
+          <button
+            onClick={() => onTabChange("approve_users")}
+            className={`flex items-center gap-3 px-4 py-3 text-left cursor-pointer sidenav-tab-settle w-full bg-transparent ${
+              activeTab === "approve_users"
+                ? "bg-white text-[#3F5B44] border-l-2 border-[#3F5B44] border-t border-r border-b border-[#DDE0DA]"
+                : "text-[#767B82] border-l-2 border-transparent border-t border-r border-b border-transparent hover:text-[#14171A]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">verified_user</span>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              Approve Users
+            </span>
+          </button>
+        )}
       </div>
+
 
       {/* Footer SideNav Actions */}
       <div className="mt-auto flex flex-col gap-1 border-t border-[#DDE0DA] pt-4">

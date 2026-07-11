@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { changePassword } from "../Services/AuthService";
 
 type Props = {
   onLogout?: () => void;
@@ -29,6 +30,25 @@ function NavBar({ onLogout, theme, onToggleTheme }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeGender, setActiveGender] = useState<"male" | "female">("male");
   const [tempSelectedPhoto, setTempSelectedPhoto] = useState(profilePhoto);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      alert("Please fill in both current and new password fields.");
+      return;
+    }
+    try {
+      await changePassword(oldPassword, newPassword);
+      alert("Password updated successfully!");
+      setOldPassword("");
+      setNewPassword("");
+    } catch (err: any) {
+      console.error("Change password error:", err);
+      const msg = err.response?.data?.detail || "Failed to update password.";
+      alert(msg);
+    }
+  };
 
   const handleLogout = () => {
     if (onLogout) {
@@ -185,6 +205,42 @@ function NavBar({ onLogout, theme, onToggleTheme }: Props) {
                     </div>
                   );
                 })}
+              </div>
+              
+              {/* Change Password Form */}
+              <div className="border-t border-[#DDE0DA] pt-4 mt-2">
+                <div 
+                  className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#3F5B44] bg-[#3F5B44]/10 px-2 py-0.5 rounded w-fit mb-3"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  SECURITY CONFIGURATION
+                </div>
+                <h4 className="text-xs font-bold font-mono uppercase text-[#14171A] m-0 mb-3" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  Change password
+                </h4>
+                <div className="flex flex-col gap-2.5">
+                  <input
+                    type="password"
+                    placeholder="Current Password"
+                    className="modern-input w-full px-3 py-2 text-xs"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    className="modern-input w-full px-3 py-2 text-xs"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleChangePassword}
+                    className="w-full py-2.5 bg-[#3F5B44] hover:bg-[#324936] text-white border-none rounded text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-xs"
+                  >
+                    Update Password
+                  </button>
+                </div>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { login, register, forgotPassword, resetPassword } from "../Services/AuthService";
+import { login, register, forgotPassword, resetPassword, resetPasswordDirect } from "../Services/AuthService";
 import "./Login.css";
 
 type Props = {
@@ -29,6 +29,8 @@ function Login({ onLogin, initialRegister = false, onModeChange }: Props) {
   // Forgot Password states
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotName, setForgotName] = useState("");
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
   const [forgotError, setForgotError] = useState<string | null>(null);
   const [forgotSuccess, setForgotSuccess] = useState<string | null>(null);
@@ -131,14 +133,18 @@ function Login({ onLogin, initialRegister = false, onModeChange }: Props) {
     setForgotSubmitting(true);
 
     try {
-      const response = await forgotPassword(forgotEmail);
-      setForgotSuccess(response.message);
-      if (response.reset_token) {
-        console.log("Dev Mode Reset Link:", response.reset_link);
-      }
+      const response = await resetPasswordDirect(forgotName, forgotEmail, forgotNewPassword);
+      setForgotSuccess(response.message || "Password reset successfully!");
+      setForgotName("");
+      setForgotEmail("");
+      setForgotNewPassword("");
+      setTimeout(() => {
+        setIsForgotPassword(false);
+        setForgotSuccess(null);
+      }, 2000);
     } catch (err: any) {
       console.error("Forgot password failed:", err);
-      const msg = err.response?.data?.detail || err.message || "Failed to initiate password reset.";
+      const msg = err.response?.data?.detail || err.message || "Failed to reset password. Please check your credentials.";
       setForgotError(msg);
     } finally {
       setForgotSubmitting(false);
@@ -293,13 +299,29 @@ function Login({ onLogin, initialRegister = false, onModeChange }: Props) {
             <form onSubmit={handleForgotPasswordSubmit}>
               <h1>Forgot Password</h1>
               <p style={{ fontSize: "12px", color: "var(--graphite)", textAlign: "center", marginBottom: "15px" }}>
-                Enter your email address and we'll generate a password reset link.
+                Enter your username, registered Gmail, and a new password code.
               </p>
               <input
+                type="text"
+                placeholder="Username"
+                value={forgotName}
+                onChange={(e) => setForgotName(e.target.value)}
+                required
+                disabled={forgotSubmitting}
+              />
+              <input
                 type="email"
-                placeholder="Email"
+                placeholder="Email Address"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                disabled={forgotSubmitting}
+              />
+              <input
+                type="password"
+                placeholder="New Password Code"
+                value={forgotNewPassword}
+                onChange={(e) => setForgotNewPassword(e.target.value)}
                 required
                 disabled={forgotSubmitting}
               />
@@ -309,10 +331,10 @@ function Login({ onLogin, initialRegister = false, onModeChange }: Props) {
                 {forgotSubmitting ? (
                   <>
                     <span className="loading-spinner"></span>
-                    Submitting...
+                    Resetting...
                   </>
                 ) : (
-                  "Request Reset"
+                  "Reset Password"
                 )}
               </button>
               <a
@@ -322,6 +344,9 @@ function Login({ onLogin, initialRegister = false, onModeChange }: Props) {
                   setIsForgotPassword(false);
                   setForgotError(null);
                   setForgotSuccess(null);
+                  setForgotName("");
+                  setForgotEmail("");
+                  setForgotNewPassword("");
                 }}
                 style={{ marginTop: "15px" }}
               >

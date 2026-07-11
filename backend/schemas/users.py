@@ -14,8 +14,10 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
+    is_approved: bool
 
     model_config = ConfigDict(from_attributes=True)
+
         
 class Login_User(BaseModel):
     email: str
@@ -26,4 +28,13 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str
+    new_password: str
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+class ResetPasswordDirectRequest(BaseModel):
+    name: str
+    email: str
     new_password: str

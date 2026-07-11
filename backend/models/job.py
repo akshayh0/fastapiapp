@@ -11,4 +11,8 @@ class Job(Base):
     description = Column(String)
     salary = Column(Integer)
     company_id = Column(Integer,ForeignKey("companies.id"))
+    owner_id = Column(Integer,ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     company = relationship("Company",back_populates="jobs")
+    applications = relationship("JobApplication", back_populates="job", cascade="all, delete-orphan")
+
+

@@ -4,7 +4,9 @@ from database import Base, engine
 from models import job as job_model
 from models import company as company_model
 from models import users as user_model
+from models import job_application as job_app_model
 from routers import auth, company, job,rag,chat
+from sqlalchemy import text
 
 app = FastAPI()
 
@@ -19,9 +21,40 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    from database import engine
+    from database import engine, SessionLocal
+    from models.users import User
+    from utils.security import hash_password
+    from sqlalchemy.future import select
+
+    # Apply database schema updates and create tables
     async with engine.begin() as conn:
+        await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT FALSE;"))
+        await conn.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL;"))
+        await conn.execute(text("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL;"))
         await conn.run_sync(Base.metadata.create_all)
+
+
+    # Seed the super admin carrier
+    async with SessionLocal() as db:
+        try:
+            result = await db.execute(select(User).filter(User.email == "carrieradmin@gmail.com"))
+            super_admin = result.scalars().first()
+            if not super_admin:
+                hashed = hash_password("carrier123")
+                super_admin = User(
+                    name="carrier",
+                    email="carrieradmin@gmail.com",
+                    hashed_password=hashed,
+                    role="super_admin",
+                    is_approved=True
+                )
+                db.add(super_admin)
+                await db.commit()
+                print("Super admin carrier seeded successfully.")
+        except Exception as e:
+            await db.rollback()
+            print(f"Error seeding super admin: {str(e)}")
+
 
 # Include Routers
 app.include_router(auth.router)

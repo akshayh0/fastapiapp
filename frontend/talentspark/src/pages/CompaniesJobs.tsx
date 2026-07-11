@@ -3,6 +3,10 @@ import type { Job } from "../types/job";
 import { useState, useEffect } from "react";
 
 type Props = {
+  currentUser?: any;
+  applications?: any[];
+  onApplyJob?: (jobId: number) => void;
+  onApproveApplication?: (appId: number) => void;
   companies: Company[];
   jobs: Job[];
   onAddCompany: (company: Company) => void;
@@ -14,6 +18,10 @@ type Props = {
 };
 
 export default function CompaniesJobs({
+  currentUser,
+  applications,
+  onApplyJob,
+  onApproveApplication,
   companies,
   jobs,
   onAddCompany,
@@ -297,22 +305,24 @@ export default function CompaniesJobs({
                           </div>
 
                           {/* Hover action buttons */}
-                          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0 bg-white pl-2">
-                            <button
-                              onClick={() => handleStartEditCompany(company)}
-                              className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-[#14171A] border-none bg-transparent cursor-pointer flex"
-                              title="Edit"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCompanyClick(company.id)}
-                              className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-red-700 border-none bg-transparent cursor-pointer flex"
-                              title="Delete"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
-                          </div>
+                          {(currentUser?.role === "admin" || currentUser?.role === "super_admin") && (
+                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0 bg-white pl-2">
+                              <button
+                                onClick={() => handleStartEditCompany(company)}
+                                className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-[#14171A] border-none bg-transparent cursor-pointer flex"
+                                title="Edit"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCompanyClick(company.id)}
+                                className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-red-700 border-none bg-transparent cursor-pointer flex"
+                                title="Delete"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Metadata row */}
@@ -339,53 +349,55 @@ export default function CompaniesJobs({
         </div>
 
         {/* Add Company Form */}
-        <form onSubmit={handleAddCompanySubmit} className="border-t border-[#DDE0DA] pt-5 space-y-3">
-          <h4 className="text-[#14171A] text-xs font-bold font-mono uppercase tracking-wider mb-2" style={{ fontFamily: "'Space Mono', monospace" }}>
-            Add Company Docket
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
-              type="text"
-              required
-              placeholder="Company Name"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addCompanyForm.name}
-              onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, name: e.target.value }))}
-            />
-            <input
-              type="text"
-              placeholder="Location"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addCompanyForm.location || ""}
-              onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, location: e.target.value }))}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
-              type="email"
-              placeholder="Email"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addCompanyForm.email || ""}
-              onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, email: e.target.value }))}
-            />
-            <input
-              type="text"
-              placeholder="Phone"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addCompanyForm.phone || ""}
-              onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, phone: e.target.value }))}
-            />
-          </div>
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={!addCompanyForm.name.trim()}
-              className="bg-[#3F5B44] text-white px-4 py-2 rounded font-mono font-bold text-xs shadow-none hover:opacity-90 transition-all border-none cursor-pointer disabled:opacity-50"
-            >
-              Add Company
-            </button>
-          </div>
-        </form>
+        {(currentUser?.role === "admin" || currentUser?.role === "super_admin") && (
+          <form onSubmit={handleAddCompanySubmit} className="border-t border-[#DDE0DA] pt-5 space-y-3">
+            <h4 className="text-[#14171A] text-xs font-bold font-mono uppercase tracking-wider mb-2" style={{ fontFamily: "'Space Mono', monospace" }}>
+              Add Company Docket
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                required
+                placeholder="Company Name"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addCompanyForm.name}
+                onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, name: e.target.value }))}
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addCompanyForm.location || ""}
+                onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, location: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="email"
+                placeholder="Email"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addCompanyForm.email || ""}
+                onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, email: e.target.value }))}
+              />
+              <input
+                type="text"
+                placeholder="Phone"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addCompanyForm.phone || ""}
+                onChange={(e) => setAddCompanyForm((prev) => ({ ...prev, phone: e.target.value }))}
+              />
+            </div>
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                disabled={!addCompanyForm.name.trim()}
+                className="bg-[#3F5B44] text-white px-4 py-2 rounded font-mono font-bold text-xs shadow-none hover:opacity-90 transition-all border-none cursor-pointer disabled:opacity-50"
+              >
+                Add Company
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* RIGHT COLUMN: JOB OPENINGS */}
@@ -501,22 +513,43 @@ export default function CompaniesJobs({
                           </div>
 
                           {/* Hover action buttons */}
-                          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0 bg-white pl-2">
-                            <button
-                              onClick={() => handleStartEditJob(job)}
-                              className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-[#14171A] border-none bg-transparent cursor-pointer flex"
-                              title="Edit"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">edit</span>
-                            </button>
-                            <button
-                              onClick={() => onDeleteJob(job.id)}
-                              className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-red-700 border-none bg-transparent cursor-pointer flex"
-                              title="Delete"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
-                          </div>
+                          {(currentUser?.role === "admin" || currentUser?.role === "super_admin") && (
+                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0 bg-white pl-2">
+                              <button
+                                onClick={() => handleStartEditJob(job)}
+                                className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-[#14171A] border-none bg-transparent cursor-pointer flex"
+                                title="Edit"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => onDeleteJob(job.id)}
+                                className="p-1 hover:bg-[#F4F5F2] text-[#767B82] hover:text-red-700 border-none bg-transparent cursor-pointer flex"
+                                title="Delete"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Apply button for Candidate */}
+                          {currentUser?.role !== "admin" && currentUser?.role !== "super_admin" && (
+                            <div className="shrink-0 pl-2">
+                              {applications?.some((app: any) => app.job_id === job.id) ? (
+                                <span className="px-2.5 py-1 rounded bg-[#3F5B44]/15 text-[#3F5B44] text-[11px] font-mono font-bold flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                                  Applied
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => onApplyJob && onApplyJob(job.id)}
+                                  className="px-3 py-1.5 bg-[#3F5B44] hover:bg-[#324936] text-white text-xs font-mono font-bold rounded border-none cursor-pointer active:scale-95 transition-all shadow-xs"
+                                >
+                                  Apply
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {job.description && (
@@ -534,58 +567,123 @@ export default function CompaniesJobs({
         </div>
 
         {/* Track Opening Form */}
-        <form onSubmit={handleAddJobSubmit} className="border-t border-[#DDE0DA] pt-5 space-y-3">
-          <h4 className="text-[#14171A] text-xs font-bold font-mono uppercase tracking-wider mb-2" style={{ fontFamily: "'Space Mono', monospace" }}>
-            Track Opening Entry
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
-              type="text"
-              required
-              placeholder="Job Title"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addJobForm.title}
-              onChange={(e) => setAddJobForm((prev) => ({ ...prev, title: e.target.value }))}
-            />
-            <input
-              type="text"
-              placeholder="Salary (e.g. 95000)"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addJobForm.salary || ""}
-              onChange={(e) => setAddJobForm((prev) => ({ ...prev, salary: e.target.value }))}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <select
-              className="modern-input w-full px-3 py-2 text-xs text-[#14171A] bg-white border border-[#DDE0DA]"
-              value={addJobForm.company_id}
-              onChange={(e) => setAddJobForm((prev) => ({ ...prev, company_id: Number(e.target.value) }))}
-            >
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Job Description"
-              className="modern-input w-full px-3 py-2 text-xs"
-              value={addJobForm.description || ""}
-              onChange={(e) => setAddJobForm((prev) => ({ ...prev, description: e.target.value }))}
-            />
-          </div>
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={!addJobForm.title.trim() || companies.length === 0}
-              className="bg-[#3F5B44] text-white px-4 py-2 rounded font-mono font-bold text-xs shadow-none hover:opacity-90 transition-all border-none cursor-pointer disabled:opacity-50"
-            >
-              Track Opening
-            </button>
-          </div>
-        </form>
+        {(currentUser?.role === "admin" || currentUser?.role === "super_admin") && (
+          <form onSubmit={handleAddJobSubmit} className="border-t border-[#DDE0DA] pt-5 space-y-3">
+            <h4 className="text-[#14171A] text-xs font-bold font-mono uppercase tracking-wider mb-2" style={{ fontFamily: "'Space Mono', monospace" }}>
+              Track Opening Entry
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                required
+                placeholder="Job Title"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addJobForm.title}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, title: e.target.value }))}
+              />
+              <input
+                type="text"
+                placeholder="Salary (e.g. 95000)"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addJobForm.salary || ""}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, salary: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <select
+                className="modern-input w-full px-3 py-2 text-xs text-[#14171A] bg-white border border-[#DDE0DA]"
+                value={addJobForm.company_id}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, company_id: Number(e.target.value) }))}
+              >
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Job Description"
+                className="modern-input w-full px-3 py-2 text-xs"
+                value={addJobForm.description || ""}
+                onChange={(e) => setAddJobForm((prev) => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                disabled={!addJobForm.title.trim() || companies.length === 0}
+                className="bg-[#3F5B44] text-white px-4 py-2 rounded font-mono font-bold text-xs shadow-none hover:opacity-90 transition-all border-none cursor-pointer disabled:opacity-50"
+              >
+                Track Opening
+              </button>
+            </div>
+          </form>
+        )}
       </div>
+      {/* Admin/Super Admin Application Approvals Section */}
+      {(currentUser?.role === "admin" || currentUser?.role === "super_admin") && (
+        <div className="lg:col-span-2 antigravity-card p-6 pt-8 flex flex-col gap-6 relative mt-6">
+          <div className="folder-tab">APPLICANT DOSSIERS</div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-white uppercase" style={{ fontFamily: "'Space Mono', monospace" }}>
+              Job Applications
+            </h3>
+            <p className="text-on-surface-variant text-xs font-mono uppercase">
+              [ Review and approve candidate job requests ]
+            </p>
+          </div>
+          {!applications || applications.length === 0 ? (
+            <p className="text-on-surface-variant/40 font-mono text-xs text-center py-6">
+              [ NO PENDING JOB APPLICATIONS ]
+            </p>
+          ) : (
+            <div className="overflow-x-auto w-full border border-white/10 rounded-xl bg-[#131b2e]/50">
+              <table className="w-full border-collapse text-left text-xs font-mono text-white">
+                <thead>
+                  <tr className="bg-white/5 text-on-surface-variant border-b border-white/10">
+                    <th className="p-4 uppercase font-bold">Candidate</th>
+                    <th className="p-4 uppercase font-bold">Email</th>
+                    <th className="p-4 uppercase font-bold">Job Title</th>
+                    <th className="p-4 uppercase font-bold">Status</th>
+                    <th className="p-4 text-right uppercase font-bold">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map((app: any) => (
+                    <tr key={app.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-semibold">{app.user_name}</td>
+                      <td className="p-4 text-on-surface-variant">{app.user_email}</td>
+                      <td className="p-4 text-secondary font-bold">{app.job_title}</td>
+                      <td className="p-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          app.status === "Approved" 
+                            ? "bg-[#3F5B44]/20 text-[#76df87]" 
+                            : "bg-primary/20 text-primary"
+                        }`}>
+                          {app.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        {app.status === "Applied" ? (
+                          <button
+                            onClick={() => onApproveApplication && onApproveApplication(app.id)}
+                            className="px-3 py-1.5 bg-[#3F5B44] hover:bg-[#324936] text-white rounded font-mono font-bold text-[10px] tracking-wider uppercase border-none cursor-pointer active:scale-95 transition-all shadow-xs"
+                          >
+                            Approve
+                          </button>
+                        ) : (
+                          <span className="text-on-surface-variant/40 text-[10px] uppercase font-bold pr-2">Done</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

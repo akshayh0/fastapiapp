@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 from database import Base
 
 class User(Base):
@@ -8,5 +9,9 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(255), nullable=False,default="Candidate")
+    is_approved = Column(Boolean, default=False, nullable=False)
+
+    applications = relationship("JobApplication", back_populates="user", cascade="all, delete-orphan")
+
 
     

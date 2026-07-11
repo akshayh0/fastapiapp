@@ -3,14 +3,46 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from models.users import User
-from schemas.users import UserCreate,UserResponse,ForgotPasswordRequest,ResetPasswordRequest
+from schemas.users import UserCreate,UserResponse,ForgotPasswordRequest,ResetPasswordRequest,ChangePasswordRequest,ResetPasswordDirectRequest
 from schemas.token import Token
 from database import get_db
 from utils.security import hash_password,verify_password
 from utils.token import create_access_token,verify_access_token
+from utils.oauth2 import get_current_user, role_required
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth",tags=["Auth"])
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.get("/pending-users", response_model=list[UserResponse])
+async def get_pending_users(db: AsyncSession = Depends(get_db), current_user: User = Depends(role_required(["super_admin"]))):
+    try:
+        result = await db.execute(select(User).filter(User.is_approved == False))
+        pending = result.scalars().all()
+        return pending
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error retrieving pending users: {str(e)}")
+
+@router.post("/approve-user/{user_id}", response_model=UserResponse)
+async def approve_user(user_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(role_required(["super_admin"]))):
+    try:
+        result = await db.execute(select(User).filter(User.id == user_id))
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user.is_approved = True
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error approving user: {str(e)}")
 
 @router.post("/register",response_model=UserResponse)
 async def register(user:UserCreate,db:AsyncSession = Depends(get_db)):
@@ -26,7 +58,8 @@ async def register(user:UserCreate,db:AsyncSession = Depends(get_db)):
             name=user.name,
             email=user.email,
             hashed_password=hashed_password,
-            role=user.role 
+            role=user.role,
+            is_approved=(user.email.lower() == "carrieradmin@gmail.com")
         )
         db.add(db_user)
         await db.commit()
@@ -47,12 +80,15 @@ async def login(form_data:OAuth2PasswordRequestForm=Depends(),db:AsyncSession = 
             raise HTTPException(status_code=404,detail="User not found")
         if not verify_password(form_data.password,existing_user.hashed_password):
             raise HTTPException(status_code=401,detail="Incorrect password")
+        if not existing_user.is_approved:
+            raise HTTPException(status_code=403, detail="Your registration is pending approval by the super admin (carrier).")
         access_token=create_access_token(data={"sub":str(existing_user.id),"role":existing_user.role})
         return {"access_token":access_token,"token_type":"Bearer"}
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication server error: {str(e)}")
+
 
 @router.post("/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
@@ -109,4 +145,42 @@ async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depen
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+
+@router.post("/change-password")
+async def change_password(request: ChangePasswordRequest, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        if not verify_password(request.old_password, current_user.hashed_password):
+            raise HTTPException(status_code=400, detail="Incorrect old password")
+        current_user.hashed_password = hash_password(request.new_password)
+        db.add(current_user)
+        await db.commit()
+        return {"message": "Password changed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error changing password: {str(e)}")
+
+@router.post("/reset-password-direct")
+async def reset_password_direct(request: ResetPasswordDirectRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        result = await db.execute(select(User).filter(User.email == request.email))
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Compare names case-insensitively
+        if user.name.strip().lower() != request.name.strip().lower():
+            raise HTTPException(status_code=400, detail="Username and Gmail do not match")
+            
+        user.hashed_password = hash_password(request.new_password)
+        db.add(user)
+        await db.commit()
+        return {"message": "Password reset successfully. You can now login with your new password."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error resetting password: {str(e)}")
+
 

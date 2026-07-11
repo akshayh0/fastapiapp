@@ -25,3 +25,18 @@ export async function deleteJob(id: number): Promise<void> {
     const response = await api.delete(`/job/${id}`)
     return response.data
 }
+
+export async function applyForJob(jobId: number): Promise<any> {
+    const response = await api.post(`/job/${jobId}/apply`)
+    return response.data
+}
+
+export async function getJobApplications(): Promise<any[]> {
+    const response = await api.get("/job/applications")
+    return response.data
+}
+
+export async function approveJobApplication(applicationId: number): Promise<any> {
+    const response = await api.post(`/job/applications/${applicationId}/approve`)
+    return response.data
+}
