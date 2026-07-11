@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { login, register, forgotPassword, resetPassword, resetPasswordDirect } from "../Services/AuthService";
+import { login, register, resetPassword, resetPasswordDirect } from "../Services/AuthService";
 import "./Login.css";
 
 type Props = {
