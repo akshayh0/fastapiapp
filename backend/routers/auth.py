@@ -44,6 +44,34 @@ async def approve_user(user_id: int, db: AsyncSession = Depends(get_db), current
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error approving user: {str(e)}")
 
+@router.get("/users", response_model=list[UserResponse])
+async def get_all_users(db: AsyncSession = Depends(get_db), current_user: User = Depends(role_required(["super_admin"]))):
+    try:
+        result = await db.execute(select(User))
+        users = result.scalars().all()
+        return users
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error retrieving users: {str(e)}")
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(role_required(["super_admin"]))):
+    try:
+        if current_user.id == user_id:
+            raise HTTPException(status_code=400, detail="You cannot delete your own account.")
+        result = await db.execute(select(User).filter(User.id == user_id))
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        await db.delete(user)
+        await db.commit()
+        return {"message": f"User {user.email} deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error deleting user: {str(e)}")
+
+
 @router.post("/register",response_model=UserResponse)
 async def register(user:UserCreate,db:AsyncSession = Depends(get_db)):
     try:

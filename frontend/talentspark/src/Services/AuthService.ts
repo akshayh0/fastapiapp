@@ -45,6 +45,17 @@ export const approveUser = async (userId: number): Promise<any> => {
     return response.data;
 };
 
+export const getAllUsers = async (): Promise<any[]> => {
+    const response = await api.get("/auth/users");
+    return response.data;
+};
+
+export const deleteUser = async (userId: number): Promise<any> => {
+    const response = await api.delete(`/auth/users/${userId}`);
+    return response.data;
+};
+
+
 export const changePassword = async (oldPassword: string, newPassword: string): Promise<any> => {
     const response = await api.post("/auth/change-password", { old_password: oldPassword, new_password: newPassword });
     return response.data;

@@ -434,7 +434,7 @@ function App() {
 
               {activeTab === "approve_users" && (
                 <div key="approve_users" className="animate-fade-in-up">
-                  <ApproveUsers />
+                  <ApproveUsers currentUser={currentUser} />
                 </div>
               )}
             </div>
